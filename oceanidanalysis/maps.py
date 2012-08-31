@@ -71,7 +71,12 @@ class Map(Basemap):
         """Quiver plot the ocean current.
         
         """
-        raise NotImplementedError
+        ur, vr, xp, yp = self.rotate_vector(u, v, lon, lat, returnxy = True)
+        q = self.quiver(xp, yp, ur, vr, **kwargs) 
+            #or specify, e.g., width=0.003, scale=400)
+        qkey = plt.quiverkey(q, 0.95, 1.05, 25, '25 m/s', labelpos='W') 
+            #TODO as defaults
+        return q, qkey
 
 
     def draw_wind(self, wind, altitude, **kwargs):
@@ -79,6 +84,15 @@ class Map(Basemap):
 
         (with or without a mask over the land)
         """
+        #TODO redefine args, or unpack wind into u,v,lat,lon
+        # transform from spherical to map projection coordinates (rotation
+        # and interpolation).
+        default = dict(length = 6, linewidth = 0.5,
+            barbcolor = 'black', flagcolor = 'cyan', )
+        nxv = 25; nyv = 25 #TODO can these be included in defaults?
+        default.update(kwargs)
+        ur, vr, xp, yp = m.transform_vector(u,v,lons,lats,nxv,nyv,returnxy=True)
+        self.barbs(xp, yp, ur, vr, **default) #TODO what does this return?
         raise NotImplementedError
 
 
@@ -139,10 +153,17 @@ class MontereyBay(Map):
 
 
 
-    def draw_mars(self, ):
+    def draw_mars(self, *args, **kwargs):
         """Mark position of MARS cabled observatory.
 
         """
+        default = dict(color = 'red', marker = 'square', label = 'MARS')
+        default.update(kwargs)
+        mars_lat = 0 #TODO
+        mars_lon = 0 #TODO
+        mars_depth = 0 #TODO
+        x, y = self(mars_lon, mars_lat) # position in projection
+        # self.plot(x, y, **default) #TODO what figure does it go to by default?
         raise NotImplementedError
 
 
