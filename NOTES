@@ -1,0 +1,13 @@
+
+Examples to look at
+-------------------
+basemap/examples/plotsst.py 
+    for an example of plotting a dataset from a netcdf file
+basemap/examples/nytolondon.py 
+    for an example of plotting a great circle route
+basemap/examples/barb_demo.py
+    for an example of wind plot using barbs (including projection/rotation)
+basemap/examples/maskoceans.py
+    for masking and general plotting
+basemap/examples/pnganim.py
+    for a loop that makes PNG files suitable for an animation using ImageMagick
