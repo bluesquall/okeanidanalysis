@@ -18,3 +18,12 @@ but if you plug that url directly into a browser, it downloads a file called RTV
 ncfile, httpheader = urllib.urlretrieve(url)
 data = Dataset(ncfile)
 and that works!
+
+Problems with coverage
+----------------------
+I was originally trying to use the 1km resolution dataset from hfrnet netCDF files, but I couldn't get it to plot.
+Then I switched to the cencalcurrents gnome netCDF, and everything seemed to work ok.
+Now, looking at (http://www.cencoos.org/sections/conditions/Google_currents/) I see that the 1km resolution dowes not actually cover Monterey Bay -- but the 2km data does.
+I'm going to try plotting again with the 2km data, and think about how I should handle data at two different resolutions.
+
+
