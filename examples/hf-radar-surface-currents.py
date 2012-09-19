@@ -11,6 +11,7 @@ An example script to generate a map of the area around Monterey Bay.
 from urllib import urlretrieve
 from netCDF4 import Dataset
 
+import os
 from datetime import datetime
 
 import numpy as np
@@ -57,7 +58,7 @@ def open_ccc_gnome_nc(url, tidx = -1, verbosity = 0):
 
 def draw_monterey_bay():
     m = Basemap(lat_0 = 36.75, lon_0 = -121.0, 
-        llcrnrlat = 36.5, llcrnrlon = -122.5, 
+        llcrnrlat = 35.5, llcrnrlon = -123.0, 
         urcrnrlat = 37, urcrnrlon = -121.75, 
         resolution = 'f',
         )
@@ -65,12 +66,12 @@ def draw_monterey_bay():
     m.fillcontinents(color='coral',lake_color='aqua')
     m.drawmapboundary(fill_color='aqua')
     m.drawrivers(color='b')
-    m.drawparallels(np.arange(36,37,0.1),labels=[1,0,0,0],fontsize=10)
-    m.drawmeridians(np.arange(-123,-120,0.1),labels=[0,0,0,1],fontsize=10)
+    m.drawparallels(np.arange(35,37,0.2),labels=[1,0,0,0],fontsize=10)
+    m.drawmeridians(np.arange(-123,-120,0.2),labels=[0,0,0,1],fontsize=10)
     return m
 
 
-def main(url, outfile=None):
+def main(url, outfile=None, outdir=None):
     m = draw_monterey_bay()
     plt.hold(True)
     t, latitudes, longitudes, z, u, v = open_hfr(url)
@@ -81,7 +82,7 @@ def main(url, outfile=None):
     n = 64 # number of points in output grid on map
         #TODO make this dependent on hte resolution of the input data?
     um, vm, xm, ym = m.transform_vector(u, v, longitudes, latitudes, 
-        2*len(longitudes), 2*len(latitudes), 
+        1*len(longitudes), 1*len(latitudes), 
         returnxy=True, masked=True, order=1)
     ulevels = np.arange(0,0.51,0.01)
     m.contourf(xm,ym,(um**2 + vm**2)**0.5, ulevels)
@@ -89,18 +90,20 @@ def main(url, outfile=None):
     q = m.quiver(xm,ym,um,vm,scale=None)
     qk = plt.quiverkey(q, 0.1, -0.2, 1, '1 m/s', labelpos='W')
     
-    plt.title('hfrnet 2km {}Z'.format(datetime.utcfromtimestamp(t).isoformat()))
+    title = 'hfrnet 6km {}Z'.format(datetime.utcfromtimestamp(t).isoformat())
+    plt.title(title)
     
 
     if outfile: plt.savefig(outfile) #TODO save args...
+    if outdir: plt.savefig(os.path.join(outdir,title.replace(' ','_').replace(':','') + '.png'), dpi=1200)
     else: plt.show()    
 
 
 if __name__ == "__main__":
     
-    url = 'http://hfrnet.ucsd.edu/thredds/ncss/grid/HFRNet/USWC/2km/hourly/RTV?var=u,v&north=37&south=36.5&east=-121.75&west=-122.5&time_start=2012-09-17T22:00:00Z&time_end=2012-09-18T23:00:00Z&accept=application/x-netcdf'
+    url = 'http://hfrnet.ucsd.edu/thredds/ncss/grid/HFRNet/USWC/6km/hourly/RTV?var=u,v&north=37&south=35&east=-121&west=-123&time_start=2012-09-18T23:00:00Z&time_end=2012-09-18T23:00:00Z&accept=application/x-netcdf'
 #    url = 'http://cencalcurrents.org/DataRealTime/Gnome/MNTY/2012_09/GNOME_MNTY_2012_09_17_2300.nc'
     #TODO write class/methods to generate these in a flexible but robust way, put them in oceanidanalysis package
-    main(url)
+    main(url, outdir='/tmp')
 
     
