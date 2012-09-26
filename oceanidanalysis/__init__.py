@@ -1,4 +1,3 @@
-
 ## data reader
 # import data
 ## common types of plots
@@ -15,4 +14,3 @@ import maps
 # import currents.subsurface
 ## fronts
 # import fronts
-

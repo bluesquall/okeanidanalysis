@@ -101,7 +101,7 @@ def main(url, outfile=None, outdir=None):
 
 if __name__ == "__main__":
     
-    url = 'http://hfrnet.ucsd.edu/thredds/ncss/grid/HFRNet/USWC/6km/hourly/RTV?var=u,v&north=37&south=35&east=-121&west=-123&time_start=2012-09-18T23:00:00Z&time_end=2012-09-18T23:00:00Z&accept=application/x-netcdf'
+    url = 'http://hfrnet.ucsd.edu/thredds/ncss/grid/HFRNet/USWC/6km/hourly/RTV?var=u,v&north=37&south=35&east=-121&west=-123&time_start=2012-09-19T06:00:00Z&time_end=2012-09-19T23:00:00Z&accept=application/x-netcdf'
 #    url = 'http://cencalcurrents.org/DataRealTime/Gnome/MNTY/2012_09/GNOME_MNTY_2012_09_17_2300.nc'
     #TODO write class/methods to generate these in a flexible but robust way, put them in oceanidanalysis package
     main(url, outdir='/tmp')

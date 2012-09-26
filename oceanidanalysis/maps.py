@@ -20,11 +20,15 @@ class Map(Basemap):
     """Subclass of basemap.Basemap with standard colors and boundaries.
 
     """
-#    def __init__(self, *args, **kwargs):
-#        super foo bar choo (whatever)
-        self.drawcoastlines(color = 'black')
-        self.fillcontinents(color='coral',lake_color='aqua')
-        self.drawrivers(color = 'blue')
+
+    def __init__(self, *args, **kwargs):
+        dkw = self.__init_defaults.copy() # don't want to overwrite the defaults
+        dkw.update(kwargs) # but do want to accept overrides
+        Basemap(*args, **dkw)
+#        super().__init__(**dkw) #TODO reasons to use this or not...
+#        self.drawcoastlines(color = 'black')
+#        self.fillcontinents(color='coral',lake_color='aqua')
+#        self.drawrivers(color = 'blue')
 
 
     def draw_bathymetry(self, isobaths):
@@ -108,17 +112,16 @@ class MontereyBay(Map):
     """A standard map canvas of Monterey Bay.
 
     """
+    #TODO is there a more pythonic way of handling defaults for subclasses?
+    __init_defaults = dict(lat_0 = 36.75, lon_0 = -121.0,
+            llcrnrlat = 36.5, llcrnrlon = -122.5,
+            urcrnrlat = 37, urcrnrlon = -121.75,
+            projection = 'tmerc', resolution = 'i')
 
-    def __init__(self, *args **kwargs):
-        bmkwargs = dict(
-            llcrnrlat = 50, llcrnrlon = -130,
-            urcrnrlat = 60, urcrnrlon = -120,
-            resolution = 'h', 
-            projection = 'tmerc', lat_0 = 55, lon_0 = -110,
-            )
-        bmkwargs.update(kwargs) # pass any keyword args through
-        
-#        super foo bar choo (whatever this needs to be)
+#XXX should I even need to override the init argument this way?
+#    def __init__(self, *args, **kwargs):
+#        Map(*args, **kwargs)
+#        super
 
     def draw_parallels(self, ):
         """Overloaded method with default args.
