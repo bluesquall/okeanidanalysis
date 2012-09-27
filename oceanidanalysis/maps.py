@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
+from oceanidanalysis import lib
+
 ## choose one of the methods below (or something similar) to make a map
 #m = Basemap(llcrnrlon=-130,llcrnrlat=60,urcrnrlon=-120,urcrnrlat=70,
 #            resolution='h',projection='tmerc',lon_0=-4,lat_0=0)
@@ -20,19 +22,6 @@ class Map(Basemap):
     """Subclass of basemap.Basemap with standard colors and boundaries.
 
     """
-
-    def __init__(self, *args, **kwargs):
-        dkw = self.get_init_defaults() # don't want to overwrite the defaults
-        dkw.update(kwargs) # but do want to accept overrides
-        Basemap.__init__(self, *args, **dkw)
-#        super(Map, self).__init__(**dkw) #TODO reasons to use this or not...
-#        self.drawcoastlines(color = 'black')
-#        self.fillcontinents(color='coral',lake_color='aqua')
-#        self.drawrivers(color = 'blue')
-
-    def get_init_defaults(self):
-        raise NotImplementedError
-
 
     def arangelat(self, dlat=1.):
         try: 
@@ -153,12 +142,14 @@ class MontereyBay(Map):
     """A standard map canvas of Monterey Bay.
 
     """
-    def get_init_defaults(self): #TODO pythonic
-        default =  dict(lat_0 = 36.75, lon_0 = -121.0,
-            llcrnrlat = 36.5, llcrnrlon = -122.5,
-            urcrnrlat = 37, urcrnrlon = -121.75,
-            projection = 'tmerc', resolution = 'i')
-        return default
+    def __init__(self, lat_0 = 36.75, lon_0 = -121.0,
+        llcrnrlat = 36.5, llcrnrlon = -122.5,
+        urcrnrlat = 37, urcrnrlon = -121.75,
+        projection = 'tmerc', resolution = 'i', **kwargs):
+        """Overloaded method with default args.
+        
+        """
+        Map.__init__(self, **lib.injectlocals(locals()))
 
 
     def drawparallels(self, dlat=.1, **kwargs):
