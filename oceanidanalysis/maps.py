@@ -30,6 +30,9 @@ class Map(Basemap):
 #        self.fillcontinents(color='coral',lake_color='aqua')
 #        self.drawrivers(color = 'blue')
 
+    def get_init_defaults(self):
+        raise NotImplementedError
+
 
     def draw_bathymetry(self, isobaths):
         """Draw isobaths under water.
@@ -114,15 +117,12 @@ class MontereyBay(Map):
     """
     #TODO is there a more pythonic way of handling defaults for subclasses?
     def get_init_defaults(self):
-        return dict(lat_0 = 36.75, lon_0 = -121.0,
+        default =  dict(lat_0 = 36.75, lon_0 = -121.0,
             llcrnrlat = 36.5, llcrnrlon = -122.5,
             urcrnrlat = 37, urcrnrlon = -121.75,
             projection = 'tmerc', resolution = 'i')
+        return default
 
-#XXX should I even need to override the init argument this way?
-#    def __init__(self, *args, **kwargs):
-#        Map(*args, **kwargs)
-#        super
 
     def draw_parallels(self, ):
         """Overloaded method with default args.
