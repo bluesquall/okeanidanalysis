@@ -29,7 +29,7 @@ def main(verbose=0, resolution='l', r=None, g=None, outfile=None,
     if g:
         m.drawparallels(np.arange(-89,89,0.1),labels=[1,1,0,0],fontsize=10)
         m.drawmeridians(np.arange(-180,180,0.1),labels=[0,0,1,1],fontsize=10)
-    plt.suptitle("Monterey Bay ({} Projection)".format(m.projection))
+#    plt.suptitle("Monterey Bay ({} Projection)".format(m.projection))
         #TODO pretty print projection
     if outfile: plt.savefig(outfile) #TODO save args...
     else: plt.show()
