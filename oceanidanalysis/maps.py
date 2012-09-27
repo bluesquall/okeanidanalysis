@@ -24,14 +24,52 @@ class Map(Basemap):
     def __init__(self, *args, **kwargs):
         dkw = self.get_init_defaults() # don't want to overwrite the defaults
         dkw.update(kwargs) # but do want to accept overrides
-        Basemap(*args, **dkw)
-#        super().__init__(**dkw) #TODO reasons to use this or not...
+        Basemap.__init__(self, *args, **dkw)
+#        super(Map, self).__init__(**dkw) #TODO reasons to use this or not...
 #        self.drawcoastlines(color = 'black')
 #        self.fillcontinents(color='coral',lake_color='aqua')
 #        self.drawrivers(color = 'blue')
 
     def get_init_defaults(self):
         raise NotImplementedError
+
+
+    def arangelat(self, dlat=1.):
+        try: 
+            parallels = np.arange(self.llcrnrlat, self.urcrnrlat, dlat)
+        except Exception, e: 
+            # corner attributes dne, probably initialized some other way...
+            raise e;
+        return parallels
+ 
+
+    def arangelon(self, dlon=1.):
+        try: 
+            meridians = np.arange(self.llcrnrlon, self.urcrnrlon, dlon)
+        except Exception, e: 
+            # corner attributes dne, probably initialized some other way...
+            raise e;
+        return meridians
+        
+       
+    def drawparallels(self, circles=None, dlat=1., 
+        labels=[1,1,0,0], fontsize=10, **kwargs):
+        """Overloaded method with default args.
+
+        """
+        kwargs.update(dict(labels=labels, fontsize=fontsize)) #TODO pythonic
+        if circles is None: circles = self.arangelat(dlat)
+        Basemap.drawparallels(self, circles, **kwargs)
+
+
+    def drawmeridians(self, circles=None, dlon=1.,
+        labels=[0,0,1,1], fontsize=10, **kwargs):
+        """Overloaded method with default args.
+
+        """
+        kwargs.update(dict(labels=labels, fontsize=fontsize)) #TODO pythonic
+        if circles is None: circles = self.arangelon(dlon)
+        Basemap.drawmeridians(self, circles, **kwargs)
 
 
     def draw_bathymetry(self, isobaths):
@@ -115,8 +153,7 @@ class MontereyBay(Map):
     """A standard map canvas of Monterey Bay.
 
     """
-    #TODO is there a more pythonic way of handling defaults for subclasses?
-    def get_init_defaults(self):
+    def get_init_defaults(self): #TODO pythonic
         default =  dict(lat_0 = 36.75, lon_0 = -121.0,
             llcrnrlat = 36.5, llcrnrlon = -122.5,
             urcrnrlat = 37, urcrnrlon = -121.75,
@@ -124,18 +161,18 @@ class MontereyBay(Map):
         return default
 
 
-    def draw_parallels(self, ):
+    def drawparallels(self, dlat=.1, **kwargs):
         """Overloaded method with default args.
 
         """
-        raise NotImplementedError
+        Map.drawparallels(self, dlat=dlat, **kwargs)
 
 
-    def draw_meridians(self, ):
+    def drawmeridians(self, dlon=.1, **kwargs):
         """Overloaded method with default args.
 
         """
-        raise NotImplementedError
+        Map.drawmeridians(self, dlon=dlon, **kwargs)
 
 
     def draw_mbari(self, ):
@@ -154,7 +191,6 @@ class MontereyBay(Map):
 
     def draw_mountains(self, ):
         raise NotImplementedError
-
 
 
     def draw_mars(self, *args, **kwargs):

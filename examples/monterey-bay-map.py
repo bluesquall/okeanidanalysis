@@ -8,10 +8,8 @@ An example script to generate a map of the area around Monterey Bay.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-#from mpl_toolkits.basemap import Basemap
 
 import oceanidanalysis as oa
-#TODO subclass basemap with default bounding box, projection, etc and include in oa.maps
 bmres = ['l','i','h','f']
 
 def main(verbose=0, resolution='l', r=None, g=None, outfile=None, 
@@ -20,15 +18,16 @@ def main(verbose=0, resolution='l', r=None, g=None, outfile=None,
     """Draw a map of Monterey Bay."""
     if verbose > 0: print 'Using Basemap to generate a map of Monterey Bay'    
     if r: resolution = bmres[r]
+
     m = oa.maps.MontereyBay(resolution=resolution, **kwargs)
     #TODO handle bluemarble, topography, etc.
-#    m.drawcoastlines()
-#    m.fillcontinents(color='coral',lake_color='aqua')
-#    m.drawmapboundary(fill_color='aqua')
-#    m.drawrivers(color='b')
+    m.drawcoastlines()
+    m.fillcontinents(color='coral',lake_color='aqua')
+    m.drawmapboundary(fill_color='aqua')
+    m.drawrivers(color='b')
     if g:
-        m.drawparallels(np.arange(-89,89,0.1),labels=[1,1,0,0],fontsize=10)
-        m.drawmeridians(np.arange(-180,180,0.1),labels=[0,0,1,1],fontsize=10)
+        m.drawparallels()
+        m.drawmeridians()
 #    plt.suptitle("Monterey Bay ({} Projection)".format(m.projection))
         #TODO pretty print projection
     if outfile: plt.savefig(outfile) #TODO save args...
@@ -78,4 +77,4 @@ if __name__ == "__main__":
     # actually parse the arguments
     args = parser.parse_args()
     # call the main method to do something interesting
-    main(**args.__dict__) #TODO more pythonic?
+    m = main(**args.__dict__) #TODO more pythonic?
