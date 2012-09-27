@@ -42,7 +42,7 @@ class Map(Basemap):
         
        
     def drawparallels(self, circles=None, dlat=1., 
-        labels=[1,1,0,0], fontsize=10, **kwargs):
+        labels=[1,0,0,0], fontsize=10, **kwargs):
         """Overloaded method with default args.
 
         """
@@ -52,13 +52,26 @@ class Map(Basemap):
 
 
     def drawmeridians(self, circles=None, dlon=1.,
-        labels=[0,0,1,1], fontsize=10, **kwargs):
+        labels=[0,0,0,1], fontsize=10, **kwargs):
         """Overloaded method with default args.
 
         """
         kwargs.update(dict(labels=labels, fontsize=fontsize)) #TODO pythonic
         if circles is None: circles = self.arangelon(dlon)
         Basemap.drawmeridians(self, circles, **kwargs)
+
+    
+    def drawgrid(self, lats=None, lons=None, **kwargs):
+        """Draw a grid of latitude and longitude lines."""
+        self.drawparallels(circles=lats, **kwargs)
+        self.drawmeridians(circles=lons, **kwargs)
+
+
+    def drawdefault(self):
+        #TODO accept several kw dicts
+        self.fillcontinents(color='coral',lake_color='aqua')
+        self.drawmapboundary(fill_color='aqua')
+        self.drawrivers(color='b')
 
 
     def draw_bathymetry(self, isobaths):

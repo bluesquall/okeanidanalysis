@@ -20,18 +20,16 @@ def main(verbose=0, resolution='l', r=None, g=None, outfile=None,
     if r: resolution = bmres[r]
 
     m = oa.maps.MontereyBay(resolution=resolution, **kwargs)
-    #TODO handle bluemarble, topography, etc.
     m.drawcoastlines()
-    m.fillcontinents(color='coral',lake_color='aqua')
-    m.drawmapboundary(fill_color='aqua')
-    m.drawrivers(color='b')
-    if g:
-        m.drawparallels()
-        m.drawmeridians()
+    if bluemarble: m.bluemarble()
+    #TODO handle topography & bathymetry
+    else: m.drawdefault()
+    if g: m.drawgrid()
 #    plt.suptitle("Monterey Bay ({} Projection)".format(m.projection))
         #TODO pretty print projection
     if outfile: plt.savefig(outfile) #TODO save args...
     else: plt.show()
+    if verbose > 0: print 'm: ', m
     return m
 
 if __name__ == "__main__":
