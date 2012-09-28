@@ -22,6 +22,8 @@ class Map(Basemap):
     """Subclass of basemap.Basemap with standard colors and boundaries.
 
     """
+    timestamp = {} # initialize an empty dictionary to track time
+    utime = {} # initialize another empty dictionary to track time
 
     def arangelat(self, dlat=1.):
         try: 
@@ -114,16 +116,31 @@ class Map(Basemap):
         raise NotImplementedError
 #TODO a track that changes color based on an ancillary variable
 
-    def draw_currents(self, current, depth=0, **kwargs):
+    def draw_currents(self, t, lat, lon, z, u, v, 
+        contourf_magnitude=True, **kwargs):
+        #TODO   Define a consistent package for water current data and 
+        #       use that instead of passing each as an argument.
         """Quiver plot the ocean current.
         
         """
-        ur, vr, xp, yp = self.rotate_vector(u, v, lon, lat, returnxy = True)
-        q = self.quiver(xp, yp, ur, vr, **kwargs) 
+        self.timestamp.update(dict(currents = t))
+        um, vm, xm, ym = self.transform_vector(u, v, lon, lat, 
+            len(lon), len(lat), returnxy = True, masked = True, order = 1)
+        #TODO   pass kwargs to transform_vector?
+        #TODO   optional input/output of *m variables above...
+        if contourf_magnitude: 
+            mm = (um**2 + vm**2)**0.5 # 2D current magnitude
+            dc = 0.01
+#TODO            cmax = max(mm) + dc 
+            cmax = 0.5 + dc
+            mmlevels = np.arange(0, cmax, dc) 
+            self.contourf(xm, ym, mm, mmlevels)
+            self.colorbar() #TODO pass kwargs
+        q = self.quiver(xm, ym, um, vm, **kwargs) 
             #or specify, e.g., width=0.003, scale=400)
-        qkey = plt.quiverkey(q, 0.95, 1.05, 25, '25 m/s', labelpos='W') 
+        qkey = plt.quiverkey(q, 0.1, -0.2, 1, '1 m/s', labelpos='W') 
             #TODO as defaults
-        return q, qkey
+        return q, qkey, t, um, vm, xm, ym
 
 
     def draw_wind(self, wind, altitude, **kwargs):
@@ -138,8 +155,8 @@ class Map(Basemap):
             barbcolor = 'black', flagcolor = 'cyan', )
         nxv = 25; nyv = 25 #TODO can these be included in defaults?
         default.update(kwargs)
-        ur, vr, xp, yp = m.transform_vector(u,v,lons,lats,nxv,nyv,returnxy=True)
-        self.barbs(xp, yp, ur, vr, **default) #TODO what does this return?
+        um, vm, xm, ym = self.transform_vector(u,v,lons,lats,nxv,nyv,returnxy=True)
+        self.barbs(xm, ym, um, vm, **default) #TODO what does this return?
         raise NotImplementedError
 
 
