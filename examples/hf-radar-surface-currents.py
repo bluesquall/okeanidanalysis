@@ -71,11 +71,8 @@ def draw_monterey_bay():
 def main(url, outfile=None, outdir=None):
     m = draw_monterey_bay()
     plt.hold(True)
-
 #    t, latitudes, longitudes, z, u, v = open_hfr(url)
 #    m.draw_currents(t, latitudes, longitudes, z, u, v)
-
-#    q, qkey, t, um, vm, xm, ym = m.draw_currents(*open_hfr(url))
     m.draw_currents(*open_hfr(url))
 
     t = m.timestamp['currents']
@@ -94,4 +91,3 @@ if __name__ == "__main__":
 #    main(url, outdir='/tmp')
     main(url)
 
-    

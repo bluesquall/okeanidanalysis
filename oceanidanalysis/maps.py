@@ -12,12 +12,6 @@ from mpl_toolkits.basemap import Basemap
 
 from oceanidanalysis import lib
 
-## choose one of the methods below (or something similar) to make a map
-#m = Basemap(llcrnrlon=-130,llcrnrlat=60,urcrnrlon=-120,urcrnrlat=70,
-#            resolution='h',projection='tmerc',lon_0=-4,lat_0=0)
-#m = Basemap(width=920000,height=1100000,
-#            resolution='f',projection='tmerc',lon_0=-4.2,lat_0=54.6)
-
 class Map(Basemap):
     """Subclass of basemap.Basemap with standard colors and boundaries.
 
@@ -180,6 +174,9 @@ class MontereyBay(Map):
         
         """
         Map.__init__(self, **lib.injectlocals(locals()))
+        #TODO some handling if the map is defined in alternate fashion, e.g.:
+#m = Basemap(width=920000,height=1100000,
+#            resolution='f',projection='tmerc',lon_0=-4.2,lat_0=54.6)
 
 
     def drawparallels(self, dlat=.1, **kwargs):
