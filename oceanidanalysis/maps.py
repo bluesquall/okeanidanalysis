@@ -211,18 +211,17 @@ class MontereyBay(Map):
         raise NotImplementedError
 
 
-    def draw_mars(self, *args, **kwargs):
+    def draw_mars(self,color='red', marker='s', label='MARS', **kwargs):
         """Mark position of MARS cabled observatory.
 
         """
-        default = dict(color = 'red', marker = 'square', label = 'MARS')
-        default.update(kwargs)
-        mars_lat = 0 #TODO
-        mars_lon = 0 #TODO
-        mars_depth = 0 #TODO
+        plot_kwargs = lib.injectlocals(locals())
+        print plot_kwargs
+        mars_lat = 36 + 42.7481/60 #TODO use proj or write a utility for oa.lib
+        mars_lon =  -(122 + 11.2139/60)
+        mars_depth = 891 # meters
         x, y = self(mars_lon, mars_lat) # position in projection
-        # self.plot(x, y, **default) #TODO what figure does it go to by default?
-        raise NotImplementedError
-
-
+        self.plot(x, y, **plot_kwargs) 
+        #TODO what figure does it go to by default?
+        
 

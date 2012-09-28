@@ -27,6 +27,7 @@ def main(verbose=0, resolution='l', r=None, g=None, outfile=None,
     if g: m.drawgrid()
 #    plt.suptitle("Monterey Bay ({} Projection)".format(m.projection))
         #TODO pretty print projection
+    m.draw_mars()
     if outfile: plt.savefig(outfile) #TODO save args...
     else: plt.show()
     if verbose > 0: print 'm: ', m
