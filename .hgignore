@@ -1,0 +1,8 @@
+syntax: glob
+*.orig
+*.rej
+*~
+*.pyc
+*.swp
+build/*
+oceanidanalysis.egg-info/*
