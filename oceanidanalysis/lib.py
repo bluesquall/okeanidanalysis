@@ -33,7 +33,7 @@ def gridunravel(ix, iy, iz, returnxy=False, ):
 #    x = np.unique(ix)
 #    y = np.unique(iy)
 #TODO ensure monotonicity...
-    gx, gy = np.meshgrid(np.unique(x), np.unique(y))
+    gx, gy = np.meshgrid(np.unique(ix), np.unique(iy))
     #TODO alternate implementation without griddata
     gz = sp.interpolate.griddata((ix, iy), iz, (gx,gy), method='nearest')
     #TODO using griddata for this is overkill, and may not be sustainable in the future -- write a more specific replacement that will handle missing values as masked _or_ nan, probably using np.ravel_multi_index

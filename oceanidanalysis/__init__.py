@@ -1,3 +1,5 @@
+## common library
+import lib
 ## data reader
 # import data
 ## common types of plots
@@ -9,7 +11,7 @@ import maps
 # import lrauv.health
 # import lrauv.performance
 ## ocean currents
-# import currents
+import currents
 # import currents.surface
 # import currents.subsurface
 ## fronts
