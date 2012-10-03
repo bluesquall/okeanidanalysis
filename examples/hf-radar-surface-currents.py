@@ -15,6 +15,9 @@ from netCDF4 import Dataset
 import numpy as np
 import scipy as sp
 import scipy.io
+import scipy.interpolate
+import matplotlib as mpl
+import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 
 import oceanidanalysis as oa
@@ -22,13 +25,36 @@ import oceanidanalysis as oa
 #TODO make a wrapper -- at least for OMA -- that opens & concatenates data based on time windows
 #XXX probably implement this as a class `Current` with subclasses url generators, and data readers for each source
 
+def unravel_oma(lat, lon, z, glat=None, glon=None, returnxy=False):
+    """Unravel variable y onto a lat/lon grid."""
+    #TODO remove nans in oma data, too
+    if not glat: glat = np.unique(lat) #TODO ensure monotonic and equally spaced
+    if not glon: glon = np.unique(lon) #TODO ensure monotonic and equally spaced
+#    gz = mlab.griddata(lon, lat, z, glon, glat)
+    gz = sp.interpolate.griddata((lon, lat), z, np.meshgrid(glon, glat), method='nearest')
+    #TODO using griddata for this is overkill, and may not be sustainable in the future -- write a more specific replacement that will handle missing values as masked _or_ nan, probably using np.ravel_multi_index
+    if returnxy: return gz, glat, glon
+    else: return gz
+    #TODO move the function above to oa.lib
+
+def ravel_oma(gx, gy, gz):
+    """Complementary function -- important for generating rows in EOF analysis.
+
+    """
+    if gx.squeeze().ndim == 1: gx, gy = np.meshgrid(gx, gy)
+    #TODO simpler treatment if inputs are masked arrays?
+    z = gz.ravel()
+    x = gx.ravel()[~isnan(z)]
+    y = gy.ravel()[~isnan(z)]
+    return x, y, z[~isnan(z)]
+
 def open_hfr(url, verbosity = 0):
     """wrapper to choose appropriate netCDF opener."""
     try:
         t, lat, lon, z, u, v = open_ccc_oma_mat(url, verbosity)
-    except ValueError: 
+    except ValueError: # the cencalcurrents netCDF has different labels
         t, lat, lon, z, u, v = open_hfrnet_thredds_ncss(url, verbosity)
-    except KeyError: # the cencalcurrents netCDF has different labels
+    except NameError:
         t, lat, lon, z, u, v = open_ccc_gnome_nc(url, verbosity)
     except Exception as e:
         raise e
@@ -44,15 +70,16 @@ def open_ccc_oma_mat(url, tidx = -1, verbosity = 1):
         data = h5py.File(matfile)
     except IOError: 
         data = sp.io.loadmat(matfile)['TUV'][0,0] #TODO look at the other fields
-    except ValueError, e: raise e # sometimes unknown mat file type
+#    except ValueError, e: raise e # sometimes unknown mat file type
     t = data['TimeStamp'][0,0] #XXX silly extra dimensions
     lat = data['LonLat'][:,1] #XXX silly extra dimensions
     lon = data['LonLat'][:,0] #XXX silly extra dimensions
     z = data['Depth'][0,0] #XXX silly extra dimensions
     if np.isnan(z): z = 0
-    u = data['U']
-    v = data['V']
-    raise NotImplementedError('u,v need to be reshaped onto a regular lat/lon grid')
+    u = unravel_oma(lat, lon, data['U'].squeeze()) / 100.
+    v = unravel_oma(lat, lon, data['V'].squeeze()) / 100.
+    lat = np.unique(lat)
+    lon = np.unique(lon) #add this for now for consistent usage for plotting... until I move it into the currents module
     return t, lat, lon, z, u, v
 
 
@@ -109,7 +136,7 @@ def make_ccc_gnome_url():
 
 
 def draw_monterey_bay():
-    m = oa.maps.MontereyBay(resolution = 'f')
+    m = oa.maps.MontereyBay(resolution = 'l')
     m.drawcoastlines()
     m.drawdefault()
     m.drawgrid()
@@ -128,13 +155,15 @@ def main(url, outfile=None, outdir=None):
     plt.title(title)
     
     if outfile: plt.savefig(outfile) #TODO save args...
-    if outdir: plt.savefig(os.path.join(outdir,title.replace(' ','_').replace(':','') + '.png'), dpi=1200)
+    if outdir: 
+        fn = os.path.join(outdir,title.replace(' ','_').replace(':','')+'.png')
+        plt.savefig(fn, dpi=1200)
     else: plt.show()    
 
 if __name__ == "__main__":
     
     url = make_ccc_oma_url(datetime(2012,10,01,00,00))
-#    url = 'http://hfrnet.ucsd.edu/thredds/ncss/grid/HFRNet/USWC/6km/hourly/RTV?var=u,v&north=37&south=35&east=-121&west=-123&time_start=2012-09-19T06:00:00Z&time_end=2012-09-19T06:00:01Z&accept=application/x-netcdf'
+#    url = 'http://hfrnet.ucsd.edu/thredds/ncss/grid/HFRNet/USWC/6km/hourly/RTV?var=u,v&north=37&south=35&east=-121&west=-123&time_start=2012-10-01T00:00:00Z&time_end=2012-10-01T01:00:00Z&accept=application/x-netcdf'
 #    url = 'http://cencalcurrents.org/DataRealTime/Gnome/MNTY/2012_09/GNOME_MNTY_2012_09_17_2300.nc'
     #TODO write class/methods to generate these in a flexible but robust way, put them in oceanidanalysis package
 #    main(url, outdir='/tmp')
