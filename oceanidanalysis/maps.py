@@ -16,9 +16,6 @@ class Map(Basemap):
     """Subclass of basemap.Basemap with standard colors and boundaries.
 
     """
-    timestamp = {} # initialize an empty dictionary to track time
-    utime = {} # initialize another empty dictionary to track time
-
     def arangelat(self, dlat=1.):
         try: 
             parallels = np.arange(self.llcrnrlat, self.urcrnrlat, dlat)
@@ -110,17 +107,10 @@ class Map(Basemap):
         raise NotImplementedError
 #TODO a track that changes color based on an ancillary variable
 
-#    def draw_currents(self, current, contourf_magnitude=True, **kwargs):
-        #TODO   Define a consistent package for water current data and 
-        #       use that instead of passing each as an argument.
-        #XXX    on second thought, that creates an uneccessary interdependence
-        #       between modules and reduces the generality of the maps tools
     def draw_currents(self, lat, lon, u, v, contourf_magnitude=True, **kwargs):
         """Quiver plot the ocean current.
         
         """
-#        self.timestamp.update(dict(currents = current.t))
-#        u,v,lon,lat = current.u, current.v, current.longitude, current.latitude
         um, vm, xm, ym = self.transform_vector(u, v, lon, lat, 
             len(lon), len(lat), returnxy = True, masked = True, order = 1)
         #TODO   pass kwargs to transform_vector?
