@@ -110,14 +110,17 @@ class Map(Basemap):
         raise NotImplementedError
 #TODO a track that changes color based on an ancillary variable
 
-    def draw_currents(self, t, lat, lon, z, u, v, 
-        contourf_magnitude=True, **kwargs):
+#    def draw_currents(self, current, contourf_magnitude=True, **kwargs):
         #TODO   Define a consistent package for water current data and 
         #       use that instead of passing each as an argument.
+        #XXX    on second thought, that creates an uneccessary interdependence
+        #       between modules and reduces the generality of the maps tools
+    def draw_currents(self, lat, lon, u, v, contourf_magnitude=True, **kwargs):
         """Quiver plot the ocean current.
         
         """
-        self.timestamp.update(dict(currents = t))
+#        self.timestamp.update(dict(currents = current.t))
+#        u,v,lon,lat = current.u, current.v, current.longitude, current.latitude
         um, vm, xm, ym = self.transform_vector(u, v, lon, lat, 
             len(lon), len(lat), returnxy = True, masked = True, order = 1)
         #TODO   pass kwargs to transform_vector?
@@ -134,7 +137,7 @@ class Map(Basemap):
             #or specify, e.g., width=0.003, scale=400)
         qkey = plt.quiverkey(q, 0.1, -0.2, 1, '1 m/s', labelpos='W') 
             #TODO as defaults
-        return q, qkey, t, um, vm, xm, ym
+        return q, qkey
 
 
     def draw_wind(self, wind, altitude, **kwargs):
