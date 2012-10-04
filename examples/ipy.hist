@@ -1,0 +1,98 @@
+# IPython log file
+
+import oceanidanalysis as oa
+oma = oa.currents.OpenBoundaryModalAnalysis()
+oma.open_datetime_url(datetime(2012,10,01,00,00))
+oma.open_datetime_url(datetime.datetime(2012,10,01,00,00))
+oma.u
+oa.lib.gridravel
+dlon, dlat, du = oa.lib.gridravel(oma.longitude, oma.latitude, oma.u)
+du.shape
+dlon.shape
+sum(np.isnan(oma.u))
+sum(np.isnan(oma.u))
+oma.u.shape
+sum(np.isnan(oma.u).ravel())
+sum(np.isnan(oma.u.ravel()))
+oma.u.ravel
+oma.u.ravel()
+oma.u.ravel().shape
+isnan(oma.u.ravel())
+sum(~np.isnan(oma.u))
+du.shape
+for hour in range(9):
+    oma.open_datetime_url(datetime.datetime(2012,10,01,hour,0))
+    dlon, dlat, du = oa.lib.gridravel(oma.longitude, oma.latitude, oma.u)
+    dlon, dlat, dv = oa.lib.gridravel(oma.longitude, oma.latitude, oma.v)
+    dus.append(du)
+    dvs.append(dv)
+    
+dus = []
+dvs = []
+for hour in range(9):
+    oma.open_datetime_url(datetime.datetime(2012,10,01,hour,0))
+    dlon, dlat, du = oa.lib.gridravel(oma.longitude, oma.latitude, oma.u)
+    dlon, dlat, dv = oa.lib.gridravel(oma.longitude, oma.latitude, oma.v)
+    dus.append(du)
+    dvs.append(dv)
+    
+dus
+np.array(dus).shape
+data_u = np.array(dus)
+data_v = np.array(dvs)
+detrended_u = scipy.signal.detrend(data_u)
+import scipy
+import scipy.signal
+import scipy.signal
+# skipping detrend for now -- need to fix scipy/lsoda
+get_ipython().magic(u'history')
+get_ipython().magic(u"logstart '~/ipy.hist'")
+U, D, V = np.linalg.svd(data_u, full_matrices=False)
+EOF = V.T
+EC = np.dot(U,D)
+EC
+EOF
+COV = dot(EC,EC.T)/(n-1)
+n = len(data_u)
+n
+COV = dot(EC,EC.T)/(n-1)
+COV
+COV = dot(EC.T,EC)/(n-1)
+COV
+COV = outer(EC,EC)/(n-1)
+COV
+COMM = outer(EC, EC.T)
+COMM
+EOF = V # read the docs -- np.linalg.svd returns V.H, not V
+for e in EOF: eof.append(oa.lib.gridunravel(lon, lat, e))
+eof = []
+for e in EOF: eof.append(oa.lib.gridunravel(lon, lat, e))
+for e in EOF: eof.append(oa.lib.gridunravel(dlon, dlat, e))
+eof = np.array(eof)
+eof.shape
+m = oa.maps.MontereyBay(resolution='l')
+m.drawcoastlines()
+m.drawgrid()
+m.contourf(dlat, dlon, eof[0])
+eof[0].shape
+dlat
+m.contourf(oma.latitude, oma.longitude, eof[0])
+x, y = m(oma.longitude, oma.latitude)
+oma.latitude
+oma.latitude.shape
+glon, glat = np.meshgrid(oma.longitude, oma.latitude)
+m.contourf(glon, glat, eof[0], latlon=True)
+m.contourf(glon, glat, eof[1], latlon=True)
+m.contourf(glon, glat, eof[2], latlon=True)
+m.contourf(glon, glat, eof[3], latlon=True)
+figure()
+plot(EC)
+m.drawdefault()
+m.contourf(glon, glat, eof[0], latlon=True)
+m.contourf(glon, glat, eof[0], 20, latlon=True)
+m.contourf(glon, glat, eof[0], 50, latlon=True)
+clf()
+m.drawdefault()
+m.contourf(glon, glat, eof[0], 100, latlon=True)
+# come back and work this all into an example script, then fold it into the oceanidanalysis project as another module -- probably called eof.py
+exit()
