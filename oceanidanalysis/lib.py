@@ -13,8 +13,8 @@ import scipy.interpolate
 
 def utime(t):
     """Convert time to mircoseconds since epoch."""
-    if type(t) is "datetime.datetime": t = t.timetuple()
-    return int(time.mktime(t)*1e6 + t.microsecond)
+    if type(t) is datetime.datetime: # t = t.timetuple()
+        return int(time.mktime(t.timetuple())*1e6 + t.microsecond)
 
 def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
     """Update a dictionary with another, skipping specified keys."""
