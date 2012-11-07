@@ -16,3 +16,5 @@ import currents
 # import currents.subsurface
 ## fronts
 # import fronts
+## EmpiricalOrthogonal Functions
+import eof
