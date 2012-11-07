@@ -16,18 +16,19 @@ def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
     kwargs.update(dict((k, v) for k, v in l.items() if k not in skip))
     return kwargs
 
-def gridravel(ix, iy, iz, rmnan=True):
+def gridravel(ix, iy, iz, rmnan=True, returnxy=True):
     """Reduce a grid to three vectors."""
     if ix.squeeze().ndim == 1: ix, iy = np.meshgrid(ix, iy)
     if not rmnan: 
-        return ix.ravel(), iy.ravel(), iz.ravel()
+        if returnxy: return ix.ravel(), iy.ravel(), iz.ravel()
+        else: return iz.ravel()
     else:
         nans = np.isnan(iz.ravel()) # use ravel for a view since it's faster
         ox = ix.ravel()[~nans]
         oy = iy.ravel()[~nans]
         oz = iz.ravel()[~nans]
-        return ox, oy, oz
-
+        if returnxy: return ox, oy, oz
+        else: return oz
 
 def gridunravel(ix, iy, iz, returnxy=False, ):
 #    x = np.unique(ix)
