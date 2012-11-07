@@ -6,9 +6,15 @@ Generally useful methods that span across submodules.
 
 """
 
+import time, datetime
 import numpy as np
 import scipy as sp
 import scipy.interpolate
+
+def utime(t):
+    """Convert time to mircoseconds since epoch."""
+    if type(t) is "datetime.datetime": t = t.timetuple()
+    return int(time.mktime(t)*1e6 + t.microsecond)
 
 def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
     """Update a dictionary with another, skipping specified keys."""
