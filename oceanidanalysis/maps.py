@@ -111,6 +111,8 @@ class Map(Basemap):
         """Quiver plot the ocean current.
         
         """
+        if lat.ndim is 2: lat = np.sort(np.unique(lat))
+        if lon.ndim is 2: lon = np.sort(np.unique(lon))
         um, vm, xm, ym = self.transform_vector(u, v, lon, lat, 
             len(lon), len(lat), returnxy = True, masked = True, order = 1)
         #TODO   pass kwargs to transform_vector?
