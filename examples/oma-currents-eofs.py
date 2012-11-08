@@ -51,16 +51,40 @@ print u_eof.EC.shape
 
 glon, glat = np.meshgrid(oma.longitude, oma.latitude)
 
-
+fig = plt.figure(0)
 m = oa.maps.MontereyBay(resolution='i')
 m.drawdefault() 
 m.contourf(glon, glat, e[0], 50, latlon=True)
 m.drawgrid()
 plt.title('EOF mode 0')
 
-fig = plt.figure(2)
+fig = plt.figure(1)
+m = oa.maps.MontereyBay(resolution='i')
+m.drawdefault() 
+m.contourf(glon, glat, e[1], 50, latlon=True)
+m.drawgrid()
+plt.title('EOF mode 1')
+
+
+fig = plt.figure(10)
 ax = fig.add_subplot(1,1,1)
 # ax.plot_date(dtos, c[0])
 ax.plot(u_eof.EC)
+
+fig = plt.figure(20)
+m = oa.maps.MontereyBay(resolution='i')
+m.drawdefault() 
+m.contourf(glon, glat, oma.u, 50, latlon=True)
+m.drawgrid()
+plt.title('original data')
+
+fig = plt.figure(21)
+m = oa.maps.MontereyBay(resolution='i')
+m.drawdefault() 
+m.contourf(glon, glat, u_eof.extract_maps(n=20)[-1], 50, latlon=True)
+m.drawgrid()
+plt.title('first 20 modes')
+
+
 
 plt.show()
