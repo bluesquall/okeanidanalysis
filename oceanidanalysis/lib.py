@@ -23,7 +23,23 @@ def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
     return kwargs
 
 def gridravel(ix, iy, iz, rmnan=True, returnxy=True):
-    """Reduce a grid to three vectors."""
+    """Reduce a grid to three vectors.
+
+    Examples
+    --------
+    >>> x, y = np.arange(4), np.arange(4)
+    >>> xg, yg = np.meshgrid(x, y)
+    >>> zg = xg**2 + yg + 1 # arbitrary test function
+    >>> xv, yv, zv = oa.lib.gridravel(xg, yg, zg)
+    >>> xv
+    array([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3])
+    >>> yv
+    array([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3])
+    >>> zg
+    array([ 1,  2,  5, 10,  2,  3,  6, 11,  3,  4,  7, 12,  4,  5,  8, 13])
+
+    """
+
     if ix.squeeze().ndim == 1: ix, iy = np.meshgrid(ix, iy)
     if not rmnan: 
         if returnxy: return ix.ravel(), iy.ravel(), iz.ravel()
@@ -37,12 +53,32 @@ def gridravel(ix, iy, iz, rmnan=True, returnxy=True):
         else: return oz
 
 def gridunravel(ix, iy, iz, returnxy=False, ):
-#    x = np.unique(ix)
-#    y = np.unique(iy)
-#TODO ensure monotonicity...
+    """Reconstruct a grid from three vectors.
+
+    The current implementation uses griddata. This method is intended to
+    work on vector sets that already represent a regular grid, so the
+    implementation will change at some point in the future.
+
+    Examples
+    --------
+    >>> x, y = np.arange(4), np.arange(4)
+    >>> xg, yg = np.meshgrid(x, y)
+    >>> zg = xg**2 + yg + 1 # arbitrary test function
+    >>> xv, yv, zv = oa.lib.gridravel(xg, yg, zg)
+    >>> xr, yr, zr = oa.lib.gridunravel(xv, yv, zv)
+    >>> np.all(xr == xg)
+    True
+    >>> np.all(yr == yg)
+    True
+    >>> np.all(zr == zg)
+    True
+
+    """
     gx, gy = np.meshgrid(np.unique(ix), np.unique(iy))
-    #TODO alternate implementation without griddata
     gz = sp.interpolate.griddata((ix, iy), iz, (gx,gy), method='nearest')
-    #TODO using griddata for this is overkill, and may not be sustainable in the future -- write a more specific replacement that will handle missing values as masked _or_ nan, probably using np.ravel_multi_index
+    #TODO   Using griddata for this is overkill, and may not be sustainable
+    #       in the future -- write a more specific replacement that will 
+    #       handle missing values as masked _or_ nan, probably using 
+    #       np.ravel_multi_index
     if returnxy: return gx, gy, gz
     else: return gz
