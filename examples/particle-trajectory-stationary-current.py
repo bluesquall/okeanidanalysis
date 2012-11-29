@@ -37,19 +37,19 @@ lon0 = -122
 
 
 fig = plt.figure(0)
-m = oa.maps.MontereyBay(resolution='i')
+m = oa.maps.MontereyBay(resolution='h')
 m.drawdefault(), m.drawcoastlines(), m.drawgrid()
 m.draw_currents(oma.latitude, oma.longitude, oma.u, oma.v)
 #TODO consider adjusting draw_currents to accept just a surfaceCurrent object
 #print trajectory
 lat0s = np.arange(36.6, 37, 0.1)
 lon0s = np.arange(-122.4, -122, 0.1)
-print lat0s
-print lon0s
+# print lat0s
+# print lon0s
 particles = [oa.currents.Particle(lat0, lon0) 
         for lat0 in lat0s for lon0 in lon0s]
 for p in particles:
-    trajectory = p.advect(oma.interpolate, np.arange(0,2*60*60,60))
+    trajectory = p.advect(oma.interpolate, np.arange(2*60*60,0,-60))
     x, y = m(trajectory[:,1], trajectory[:,0])
     m.scatter(x,y,3,marker='o',color='r')
 
