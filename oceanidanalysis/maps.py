@@ -63,7 +63,8 @@ class Map(Basemap):
     def drawdefault(self):
         #TODO accept several kw dicts
         self.fillcontinents(color='coral',lake_color='aqua')
-        self.drawmapboundary(fill_color='aqua')
+        #self.drawmapboundary(fill_color='aqua')
+        self.drawmapboundary()
         self.drawrivers(color='b')
 
 
@@ -123,7 +124,7 @@ class Map(Basemap):
 #TODO            cmax = max(mm) + dc 
             cmax = 0.5 + dc
             mmlevels = np.arange(0, cmax, dc) 
-            self.contourf(xm, ym, mm, mmlevels)
+            self.contourf(xm, ym, mm, mmlevels, cmap=plt.cm.Blues)
             self.colorbar() #TODO pass kwargs
         q = self.quiver(xm, ym, um, vm, **kwargs) 
             #or specify, e.g., width=0.003, scale=400)

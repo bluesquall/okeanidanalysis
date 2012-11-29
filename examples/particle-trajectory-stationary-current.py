@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 """
-Empirical Orthogonal Functions on OMA surface currents
-======================================================
-
-Open Boundary Modal Analysis 
+Particle trajectory in stationary surface currents
+==================================================
 
 """
 import datetime
 import numpy as np
+import scipy as sp
+import scipy.interpolate
 import matplotlib.pyplot as plt
+import pyproj
 import oceanidanalysis as oa
 
-# evaluate EOFs separately for now
-u_eof = oa.eof.EOF()
-v_eof = oa.eof.EOF()
+
 
 # get some example data
 oma = oa.currents.OpenBoundaryModalAnalysis()
@@ -21,86 +20,37 @@ dtostart = datetime.datetime(2012,01,01,0,0)
 oma.open_datetime_url(dtostart)
 glon, glat = np.meshgrid(oma.longitude, oma.latitude)
 
-dtos, utimes, dus, dvs = [], [], [], []
-for h in range(72):
-    tdelta = datetime.timedelta(hours = h)
-    dto = dtostart + tdelta
-    utime = oa.lib.utime(dto)
-    oma.open_datetime_url(dto)
-    dlon, dlat, du = oa.lib.gridravel(oma.longitude, oma.latitude, oma.u)   
-    #TODO confirm dlon, dlat unchanged...
-#    dlon, dlat, dv = oa.lib.gridravel(oma.longitude, oma.latitude, oma.v)
-    dtos.append(dto)
-    utimes.append(utime)
-    dus.append(du)
-#    dvs.append(dv)
-du = np.array(dus)
-dv = np.array(dvs)
-utime = np.array(utimes)
+# for now, interpolate currents directly in lat/lon
+#iu = sp.interpolate.RectBivariateSpline(oma.longitude, oma.latitude, oma.u)
+#iv = sp.interpolate.RectBivariateSpline(oma.longitude, oma.latitude, oma.v)
 
-# print dlon.shape, dlat.shape, du.shape
+# for now, perform meters calculations in UTM
+# TODO in the future, use locally-centered NED frame at each instant
+latlon = pyproj.Proj(proj='latlong', datum='WGS84')
+utm = pyproj.Proj(proj='utm', zone=10, datum='WGS84') # MB in S10
+# define initial position in lat/lon; convert to UTM (meters)
+lat0 = 36.75
+lon0 = -122
+# x0, y0 = pyproj.transform(latlon, utm, lon0, lat0)
 
-u_eof.insert_maps(dlon, dlat, du, utime)
-# v_eof.insert_maps(dlon, dlat, dv, utime)
 
-u_eof.calculate(detrend=False)
-# v_eof.calculate()
 
-e = u_eof.extract_maps()
-c = u_eof.EC
-
-print u_eof.EOF[0].shape, du[0].shape, np.all(u_eof.EOF[0].shape == du[0].shape)
-print u_eof.EC.shape
 
 fig = plt.figure(0)
 m = oa.maps.MontereyBay(resolution='i')
 m.drawdefault(), m.drawcoastlines(), m.drawgrid()
-m.contourf(glon, glat, e[0], 50, latlon=True)
-plt.title('EOF mode 0')
-
-fig = plt.figure(1)
-m = oa.maps.MontereyBay(resolution='i')
-m.drawdefault(), m.drawcoastlines(), m.drawgrid()
-m.contourf(glon, glat, e[1], 50, latlon=True)
-plt.title('EOF mode 1')
-
-
-fig = plt.figure(10)
-ax = fig.add_subplot(1,1,1)
-# ax.plot_date(dtos, c[0])
-ax.plot(u_eof.EC)
-
-# re-open a specific oma set
-tdelta = datetime.timedelta(hours = 6)
-dto = dtostart + tdelta
-oma.open_datetime_url(dto)
-
-cfkw = dict(levels=np.arange(-1,1.1,0.1), latlon=True)
-k = np.where(utime == oa.lib.utime(dto))[0][0]
-print k
-n = 2**5 # number of modes to use in reconstruction
-
-fig = plt.figure(20)
-m = oa.maps.MontereyBay(resolution='i')
-m.drawdefault(), m.drawcoastlines(), m.drawgrid()
-m.contourf(glon, glat, oma.u, **cfkw)
-plt.colorbar()
-plt.title('original data')
-
-fig = plt.figure(21)
-m = oa.maps.MontereyBay(resolution='i')
-m.drawdefault(), m.drawcoastlines(), m.drawgrid()
-m.contourf(glon, glat, u_eof.extract_maps(n=n)[k], **cfkw)
-plt.colorbar()
-plt.title('first {} modes'.format(n))
-
-for p in np.arange(0, 72, 4):
-    fig = plt.figure(1000+p)
-    m = oa.maps.MontereyBay(resolution='i')
-    m.drawdefault(), m.drawcoastlines(), m.drawgrid()
-    m.contourf(glon, glat, oma.u - u_eof.extract_maps(n=p)[k], latlon=True,
-            levels=np.arange(-01,1.1,0.1)/10)
-    plt.colorbar()
-    plt.title('original data - first {} modes'.format(p))
+m.draw_currents(oma.latitude, oma.longitude, oma.u, oma.v)
+#TODO consider adjusting draw_currents to accept just a surfaceCurrent object
+#print trajectory
+lat0s = np.arange(36.6, 37, 0.1)
+lon0s = np.arange(-122.4, -122, 0.1)
+print lat0s
+print lon0s
+particles = [oa.currents.Particle(lat0, lon0) 
+        for lat0 in lat0s for lon0 in lon0s]
+for p in particles:
+    trajectory = p.advect(oma.interpolate, np.arange(0,2*60*60,60))
+    x, y = m(trajectory[:,1], trajectory[:,0])
+    m.scatter(x,y,3,marker='o',color='r')
 
 plt.show()
