@@ -1,7 +1,7 @@
 ## common library
 import lib
 ## data reader
-# import data
+import logs
 ## common types of plots
 # import timeseries
 import maps
@@ -16,5 +16,5 @@ import currents
 # import currents.subsurface
 ## fronts
 # import fronts
-## EmpiricalOrthogonal Functions
+## Empirical Orthogonal Functions
 import eof
