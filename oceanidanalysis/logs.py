@@ -44,10 +44,12 @@ class OceanidLog(h5py.File):
 
             f.close()
 
+
     def plot_timeseries(self, x, *a, **kw):
         "A convenience function for plotting time-series."""
         plt.plot_date(self[x]['time'][:], self[x]['value'][:], *a, **kw)
         # TODO  let it accept ax as an optional argument
+
 
     def map_trajectory(self, mapobject, *a, **kw):
         lats = np.rad2deg(self['latitude']['value'][:])
@@ -55,6 +57,23 @@ class OceanidLog(h5py.File):
         x, y = mapobject(lons, lats)
         mapobject.plot(x, y, *a, **kw)
 
+
+    def meters_trajectory(self, projection):
+        """
+        
+        Monterey Bay in UTM:
+            projection = pyproj.Proj(proj='utm', zone=10, ellps='WGS84')
+
+        """
+        latitude = np.rad2deg(self['latitude']['value'][:])
+        longitude = np.rad2deg(self['longitude']['value'][:])
+        depth = self['depth']['value'][:]
+        northing, easting = projection(longitude, latitude)
+        return np.vstack((northing, easting, depth)).T
+
+
+# TODO move trajectory (time) interpolation tool into this module
+# TODO include an interpolation for trajectory in meters as well
 
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OceanidLog):
