@@ -43,6 +43,9 @@ class OceanidLog(h5py.File):
             f = OceanidLog(filename,'r') # open another log read-only
 
             f.close()
+        raise NotImplementedError
+        # TODO  This method would be very useful for making a single log
+        #       for each deployment.
 
 
     def plot_timeseries(self, x, *a, **kw):
