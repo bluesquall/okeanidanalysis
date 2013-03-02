@@ -78,6 +78,8 @@ class OceanidLog(h5py.File):
 # TODO move trajectory (time) interpolation tool into this module
 # TODO include an interpolation for trajectory in meters as well
 
+# TODO include a mean/median/max/min/range tool, geared mostly toward tuning data sent back to shore and decimation of that data
+
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OceanidLog):
 #class ShoreLog(OceanidLog):
