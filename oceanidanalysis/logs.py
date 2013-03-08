@@ -11,6 +11,8 @@ import scipy as sp
 import h5py
 import matplotlib.pyplot as plt
 
+# TODO provide alternate access to netCDF files through OceanidNetCDF?
+
 class OceanidLog(h5py.File):
 
     def print_tree(self,):
@@ -50,8 +52,22 @@ class OceanidLog(h5py.File):
 
     def plot_timeseries(self, x, *a, **kw):
         "A convenience function for plotting time-series."""
-        plt.plot_date(self[x]['time'][:], self[x]['value'][:], *a, **kw)
-        # TODO  let it accept ax as an optional argument
+        if not a: a = '-' # plot a line by default
+        # TODO  How should I deal with deeply nested variables?
+        if 'label' not in kw: 
+            kw.update({'label': x.replace('platform','').replace('_',' ')})
+        t, v = self[x]['time'][:], self[x]['value'][:]
+        if 'convert' in kw: 
+            f = kw.pop('convert')
+            v = f(v)
+        if 'tconvert' in kw: 
+            f = kw.pop('tconvert')
+            t = f(t)
+        if 'axes' in kw: # deal with possible bug in plot_date?
+            ax = kw.pop('axes')
+            ax.plot_date(t, v, *a, **kw)
+        else: # just make a new axis
+            plt.plot_date(t, v, *a, **kw)
 
 
     def map_trajectory(self, mapobject, *a, **kw):
@@ -77,6 +93,47 @@ class OceanidLog(h5py.File):
 
 # TODO move trajectory (time) interpolation tool into this module
 # TODO include an interpolation for trajectory in meters as well
+
+    def vplane(self, ):
+        """Plot control variables in vertical plane for review.
+
+        Originally patterned after vplaneLR.m, by Rob McEwen.
+
+        """
+        fig = plt.figure()
+        axkw = dict(frameon = True)
+        depth_ax = fig.add_subplot(5,1,1, **axkw)
+        axkw.update(dict(sharex = depth_ax))
+        pitch_ax = fig.add_subplot(5,1,2, **axkw)
+        buoyancy_mass_ax = fig.add_subplot(5,1,3, **axkw)
+        control_surface_ax = fig.add_subplot(5,1,4, **axkw)
+#        control_mode_ax = fig.add_subplot(5,1,5, **axkw)
+        # TODO adjust scale and coverage for each subplot
+        axs = [depth_ax, pitch_ax, buoyancy_mass_ax, control_surface_ax, ]#control_mode_ax] # list for convenience
+
+        self.plot_timeseries('depth', '-', axes=depth_ax)
+        # TODO  Include other lines in this panel
+#        depth_ax.set_ylim([1.1 * self['depth']['value'][:].max(), -1])
+
+        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax)
+        # TODO  Include other lines in this panel
+
+        self.plot_timeseries('platform_mass_position', axes=buoyancy_mass_ax)
+        self.plot_timeseries('platform_buoyancy_position', 
+                axes=buoyancy_mass_ax)
+        # TODO  Include other lines in this panel
+        
+        self.plot_timeseries('platform_elevator_angle', 
+                axes=control_surface_ax)
+        # TODO  Include other lines in this panel
+
+        # TODO  Include another panel with VerticalControl mode (iff present)
+        
+        depth_ax.invert_yaxis()
+        for ax in axs:
+            ax.grid(True)
+            ax.legend()
+
 
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OceanidLog):
