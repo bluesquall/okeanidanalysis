@@ -71,8 +71,10 @@ class OceanidLog(h5py.File):
 
 
     def map_trajectory(self, mapobject, *a, **kw):
-        lats = np.rad2deg(self['latitude']['value'][:])
-        lons = np.rad2deg(self['longitude']['value'][:])
+        lats = self['latitude']['value'][:]
+        lons = self['longitude']['value'][:]
+        if self['latitude']['units'][:] is 'radians': # TODO troubleshoot
+            lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         x, y = mapobject(lons, lats)
         mapobject.plot(x, y, *a, **kw)
 
