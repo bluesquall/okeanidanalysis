@@ -57,6 +57,7 @@ class OceanidLog(h5py.File):
         if 'label' not in kw: 
             kw.update({'label': x.replace('platform','').replace('_',' ')})
         t, v = self[x]['time'][:], self[x]['value'][:]
+        t = t - 366 # plot_date expects float days since 0001-01-01 UTC
         if 'convert' in kw: 
             f = kw.pop('convert')
             v = f(v)
@@ -107,26 +108,29 @@ class OceanidLog(h5py.File):
         depth_ax = fig.add_subplot(5,1,1, **axkw)
         axkw.update(dict(sharex = depth_ax))
         pitch_ax = fig.add_subplot(5,1,2, **axkw)
-        buoyancy_mass_ax = fig.add_subplot(5,1,3, **axkw)
-        control_surface_ax = fig.add_subplot(5,1,4, **axkw)
+        mass_ax = fig.add_subplot(5,1,3, **axkw)
+        buoyancy_ax = fig.add_subplot(5,1,4, **axkw)
+        control_surface_ax = fig.add_subplot(5,1,5, **axkw)
 #        control_mode_ax = fig.add_subplot(5,1,5, **axkw)
         # TODO adjust scale and coverage for each subplot
-        axs = [depth_ax, pitch_ax, buoyancy_mass_ax, control_surface_ax, ]#control_mode_ax] # list for convenience
+        axs = [depth_ax, pitch_ax, mass_ax, buoyancy_ax, control_surface_ax, ]#control_mode_ax] # list for convenience
 
         self.plot_timeseries('depth', '-', axes=depth_ax)
         # TODO  Include other lines in this panel
 #        depth_ax.set_ylim([1.1 * self['depth']['value'][:].max(), -1])
 
-        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax)
+        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax, 
+                convert=np.rad2deg)
         # TODO  Include other lines in this panel
 
-        self.plot_timeseries('platform_mass_position', axes=buoyancy_mass_ax)
-        self.plot_timeseries('platform_buoyancy_position', 
-                axes=buoyancy_mass_ax)
+        self.plot_timeseries('platform_mass_position', axes=mass_ax)
+        # TODO  Include other lines in this panel
+
+        self.plot_timeseries('platform_buoyancy_position', axes=buoyancy_ax)
         # TODO  Include other lines in this panel
         
         self.plot_timeseries('platform_elevator_angle', 
-                axes=control_surface_ax)
+                axes=control_surface_ax) # no need to convert, already deg
         # TODO  Include other lines in this panel
 
         # TODO  Include another panel with VerticalControl mode (iff present)
