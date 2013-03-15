@@ -6,21 +6,55 @@ Generally useful methods that span across submodules.
 
 """
 
-import time, datetime
+import time, datetime, pytz, itertools
 import numpy as np
 import scipy as sp
 import scipy.interpolate
 
-def utime(t):
-    """Convert time to mircoseconds since epoch."""
-    if type(t) is datetime.datetime: # t = t.timetuple()
-        return int(time.mktime(t.timetuple())*1e6 + t.microsecond)
+UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)                         
+
+def utime(t, convention=None):
+    """Convert time to mircoseconds since epoch.
+
+    Expects time given as a datetime object.
+
+    """
+#    typet = type(t)
+#    if typet is datetime.datetime: # t = t.timetuple()
+#        return int(time.mktime(t.timetuple())*1e6 + t.microsecond)
+#    else:
+#        raise TypeError('time type {} not recognized'.format(typet))
+#TODO something to handle matlab datenum convention easily
+    return python_datetime_to_unix_epoch(t) * 1e6
+
+
+def python_datetime_to_unix_epoch(dto):                                         
+    try:                                                                        
+        return [(dt - UNIX_EPOCH).total_seconds for dt in dto]
+    except TypeError: # can't subtract offset-naive and offset-aware datetimes
+        dto = (pytz.UTC.localize(dt) for dt in dto)
+        return [(dt - UNIX_EPOCH).total_seconds() for dt in dto]  
+
+
+def matlab_datenum_to_python_datetime(dn):                                      
+    day = (datetime.datetime.fromordinal(int(n)) for n in dn)
+    frac = (datetime.timedelta(days=n%1) for n in dn)
+    shift = datetime.timedelta(days = 366)                                       
+    return [d + f - shift for d, f in itertools.izip(day, frac)] 
+
 
 def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
     """Update a dictionary with another, skipping specified keys."""
     if l.has_key('kwargs') : kwargs.update(l['kwargs'])
     kwargs.update(dict((k, v) for k, v in l.items() if k not in skip))
     return kwargs
+
+
+def make_multiplier(n): return lambda x: x*n
+
+
+def make_divider(n): return lambda x: x/n
+
 
 def gridravel(ix, iy, iz, rmnan=True, returnxy=True):
     """Reduce a grid to three vectors.
@@ -52,6 +86,7 @@ def gridravel(ix, iy, iz, rmnan=True, returnxy=True):
         if returnxy: return ox, oy, oz
         else: return oz
 
+
 def gridunravel(ix, iy, iz, returnxy=False, ):
     """Reconstruct a grid from three vectors.
 
@@ -82,3 +117,6 @@ def gridunravel(ix, iy, iz, returnxy=False, ):
     #       np.ravel_multi_index
     if returnxy: return gx, gy, gz
     else: return gz
+
+
+
