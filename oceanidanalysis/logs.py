@@ -11,6 +11,8 @@ import scipy as sp
 import h5py
 import matplotlib.pyplot as plt
 
+import oceanidanalysis.lib as oalib
+
 # TODO provide alternate access to netCDF files through OceanidNetCDF?
 
 class OceanidLog(h5py.File):
@@ -50,25 +52,37 @@ class OceanidLog(h5py.File):
         #       for each deployment.
 
 
-    def plot_timeseries(self, x, *a, **kw):
-        "A convenience function for plotting time-series."""
-        if not a: a = '-' # plot a line by default
-        # TODO  How should I deal with deeply nested variables?
-        if 'label' not in kw: 
-            kw.update({'label': x.replace('platform','').replace('_',' ')})
-        t, v = self[x]['time'][:], self[x]['value'][:]
-        t = t - 366 # plot_date expects float days since 0001-01-01 UTC
+    def timeseries(self, x, return_epoch=False, **kw):
+        """Extract simple timeseries.
+        
+        e.g.,   depth, t = slate.timeseries('depth')
+                depthCmd, t = slate.timeseries('VerticalControl/depthCmd')
+                etc.
+
+        """
+        v = self[x]['value'][:].ravel()
         if 'convert' in kw: 
             f = kw.pop('convert')
             v = f(v)
-        if 'tconvert' in kw: 
-            f = kw.pop('tconvert')
-            t = f(t)
+        t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
+        if return_epoch: # XXX does this if really slow things down?
+            t = oalib.python_datetime_to_unix_epoch(t)
+        return v, np.array(t)
+
+
+    def plot_timeseries(self, x, *a, **kw):
+        """A convenience function for plotting time-series."""
+        v, t = self.timeseries(x, **kw)
+        if not a: a = '-' # plot a line by default
+        if 'label' not in kw: 
+            kw.update({'label': x.replace('platform','').replace('_',' ')})
         if 'axes' in kw: # deal with possible bug in plot_date?
             ax = kw.pop('axes')
             ax.plot_date(t, v, *a, **kw)
+            return ax
         else: # just make a new axis
             plt.plot_date(t, v, *a, **kw)
+            return plt.gca()
 
 
     def map_trajectory(self, mapobject, *a, **kw):
@@ -87,9 +101,9 @@ class OceanidLog(h5py.File):
             projection = pyproj.Proj(proj='utm', zone=10, ellps='WGS84')
 
         """
-        latitude = np.rad2deg(self['latitude']['value'][:])
-        longitude = np.rad2deg(self['longitude']['value'][:])
-        depth = self['depth']['value'][:]
+        latitude = np.rad2deg(self['latitude/value'][:])
+        longitude = np.rad2deg(self['longitude/value'][:])
+        depth = self['depth/value'][:]
         northing, easting = projection(longitude, latitude)
         return np.vstack((northing, easting, depth)).T
 
@@ -108,29 +122,49 @@ class OceanidLog(h5py.File):
         depth_ax = fig.add_subplot(5,1,1, **axkw)
         axkw.update(dict(sharex = depth_ax))
         pitch_ax = fig.add_subplot(5,1,2, **axkw)
-        mass_ax = fig.add_subplot(5,1,3, **axkw)
-        buoyancy_ax = fig.add_subplot(5,1,4, **axkw)
-        control_surface_ax = fig.add_subplot(5,1,5, **axkw)
+        buoyancy_mass_ax = fig.add_subplot(5,1,3, **axkw)
+        control_surface_ax = fig.add_subplot(5,1,4, **axkw)
 #        control_mode_ax = fig.add_subplot(5,1,5, **axkw)
         # TODO adjust scale and coverage for each subplot
-        axs = [depth_ax, pitch_ax, mass_ax, buoyancy_ax, control_surface_ax, ]#control_mode_ax] # list for convenience
+        axs = [depth_ax, pitch_ax, buoyancy_mass_ax, control_surface_ax, ]#control_mode_ax] # list for convenience
 
         self.plot_timeseries('depth', '-', axes=depth_ax)
+        try: 
+            self.plot_timeseries('VerticalControl/smoothDepthInternal', 
+                    'r-', axes=depth_ax)
+        except: print 'no VerticalControl/smoothDepthInternal'
+        try:
+            self.plot_timeseries('VerticalControl/depthCmd', 
+                    'g-', axes=depth_ax)
+        except: print 'no VerticalControl/depthCmd'
+        try:
+            self.plot_timeseries('VerticalControl/depthErrorInternal', 
+                    'g:', axes=depth_ax)
+        except: print 'no VerticalControl/depthErrorInternal'
+        try:
+            self.plot_timeseries('VerticalControl/depthRateCmd', 
+                    convert=oalib.make_multiplier(100), 
+                    color='gray', axes=depth_ax)
+        except: print 'no VerticalControl/depthRateCmd'
+
+
+
+
+
+
         # TODO  Include other lines in this panel
 #        depth_ax.set_ylim([1.1 * self['depth']['value'][:].max(), -1])
 
-        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax, 
-                convert=np.rad2deg)
+        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax)
         # TODO  Include other lines in this panel
 
-        self.plot_timeseries('platform_mass_position', axes=mass_ax)
-        # TODO  Include other lines in this panel
-
-        self.plot_timeseries('platform_buoyancy_position', axes=buoyancy_ax)
+        self.plot_timeseries('platform_mass_position', axes=buoyancy_mass_ax)
+        self.plot_timeseries('platform_buoyancy_position', 
+                axes=buoyancy_mass_ax)
         # TODO  Include other lines in this panel
         
         self.plot_timeseries('platform_elevator_angle', 
-                axes=control_surface_ax) # no need to convert, already deg
+                axes=control_surface_ax)
         # TODO  Include other lines in this panel
 
         # TODO  Include another panel with VerticalControl mode (iff present)
