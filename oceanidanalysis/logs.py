@@ -111,6 +111,23 @@ class OceanidLog(h5py.File):
 # TODO move trajectory (time) interpolation tool into this module
 # TODO include an interpolation for trajectory in meters as well
 
+
+    def crossplot(self, x, y, correlation=False, *a, **kw):
+        #TODO add optional transformations for data in each channel
+        x, tx = self.timeseries(x, return_epoch=True)
+        y, ty = self.timeseries(y, return_epoch=True)
+        t = np.hstack((tx,ty))
+        t.sort() # in-place sort
+        ix = np.interp(t,tx,x)
+        iy = np.interp(t,ty,y)
+        s = plt.scatter(ix, iy, *a, **kw) # axes, etc pass through
+        if correlation:
+            raise NotImplementedError
+            # TODO calculate linear correlation, add line to plot
+            return s, ix, iy, cxy
+        else: return s, ix, iy
+
+
     def vplane(self, ):
         """Plot control variables in vertical plane for review.
 
