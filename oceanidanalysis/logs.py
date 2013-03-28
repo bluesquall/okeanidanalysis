@@ -6,10 +6,15 @@ Generally useful methods that span across submodules.
 
 """
 
+# import cgi # do I actually need this anywhere?
+import itertools
+
 import numpy as np
 import scipy as sp
 import h5py
 import matplotlib.pyplot as plt
+
+import gviz_api
 
 import oceanidanalysis.lib as oalib
 
@@ -17,9 +22,9 @@ import oceanidanalysis.lib as oalib
 
 class OceanidLog(h5py.File):
 
-    def print_tree(self,):
+    def print_tree(self, verbosity=0): # keep this, it can be useful
         for k0, i0 in self.items():
-            if isinstance(i0, h5py.Dataset):
+            if isinstance(i0, h5py.Dataset) and verbosity > 0:
                 print 'found level 0 dataset', k0
                 # TODO collect the dataset size
             elif isinstance(i0, h5py.Group):
@@ -27,13 +32,13 @@ class OceanidLog(h5py.File):
                 # ... continue into the group -- there should be a smart war
                 # to do this without rewriting a lot of code...
                 for k1, i1 in i0.items():
-                    if isinstance(i1, h5py.Dataset):
+                    if isinstance(i1, h5py.Dataset) and verbosity > 0:
                         print '\tfound level 1 dataset', k1
                         # TODO collect the dataset size
                     elif isinstance(i1,h5py.Group):
                         print '\tfound subgroup', k1
                         for k2, i2 in i1.items():
-                            if isinstance(i2, h5py.Dataset):
+                            if isinstance(i2, h5py.Dataset) and verbosity>0:
                                 print '\t\tfound level 2 dataset', k2
                             elif isinstance(i2, h5py.Group):
                                 print '\t\tfound subsubgroub', k2
@@ -52,7 +57,7 @@ class OceanidLog(h5py.File):
         #       for each deployment.
 
 
-    def timeseries(self, x, return_epoch=False, **kw):
+    def timeseries(self, x, return_epoch=False, return_list=False, convert=None):
         """Extract simple timeseries.
         
         e.g.,   depth, t = slate.timeseries('depth')
@@ -61,13 +66,15 @@ class OceanidLog(h5py.File):
 
         """
         v = self[x]['value'][:].ravel()
-        if 'convert' in kw: 
-            f = kw.pop('convert')
-            v = f(v)
+        if convert: 
+            v = convert(v)
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
         if return_epoch: # XXX does this if really slow things down?
             t = oalib.python_datetime_to_unix_epoch(t)
-        return v, np.array(t)
+        if return_list:
+            return v.tolist(), t
+        else: 
+            return v, np.array(t)
 
 
     def plot_timeseries(self, x, *a, **kw):
@@ -192,7 +199,78 @@ class OceanidLog(h5py.File):
             ax.legend()
 
 
+
+
+
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OceanidLog):
 #class ShoreLog(OceanidLog):
 #class ShipLog(OceanidLog):
+
+class GVisLog(OceanidLog):
+    """Provides extra methods to interface with Google Charts API.
+    
+    (Really just separated into its own class for taste.)
+    
+    """
+    
+    def timeseries_to_gviz_data_table(self, group, **kw):
+        """Create a DataTable for the Google Charts API.
+
+        """
+        description = { 'group': ('number', group),
+                        'time': ('datetime', 'time') }
+        data = [{'group': float(v), 'time': t} for v,t 
+                in itertools.izip(*self.timeseries(group, **kw))]
+        table = gviz_api.DataTable(description)
+        table.LoadData(data)
+        return table
+        
+
+    def timeseries_to_json_response(self, form, group, *a, **kw):
+        """Generate a full API-compliant response to serve timeseries data.
+
+        Parameters
+        ----------
+        form : an instance of cgi.FieldStorage() using psl cgi
+        
+        group : string
+            points to the timeseries of interest, e.g., sea_water_temperature
+
+        Returns
+        -------
+        response : string
+            contains the content header, separation, and google.visualization.Query.setResponse
+
+        References
+        ----------
+        https://developers.google.com/chart/interactive/docs/dev/implementing_data_source#responseformat
+
+        """
+        tqxstr = form.getfirst('tqx')
+        if not tqxstr:
+            tqx = {} # empty dict, and probably bad request...
+        else:
+            tqx = dict([p.split(':') for p in tqxstr.split(';')])
+
+        jsrkw = dict(columns_order=('time', 'group'), order_by='time',
+# XXX not handled yet...                responseHandler='google.visualization.Query.setResponse',
+                )
+
+        if 'version' in tqx: 
+            jsrkw.update(version=tqx['version'])
+        if 'reqId' in tqx: 
+            jsrkw.update(req_id=tqx['reqId'])
+        # TODO handle status other than OK...
+        # TODO handle sig... if sig in tqx: jsrkw.update(req_id=tqx['reqId'])
+        if 'out' in tqx: 
+            if tqx['out'] is not 'json': 
+                raise NotImplementedError
+        # TODO these are _supposed_ to be defined and handled...
+        #if 'responseHandler' in tqx: 
+        #    jsrkw.update(responseHandler=tqx['responseHandler'])
+        #if 'outFileName' in tqx: 
+        #    raise NotImplementedError
+        table = self.timeseries_to_gviz_data_table(group, *a, **kw)
+        return "Content-type: text/plain\n\n" + table.ToJSonResponse(**jsrkw)
+    
