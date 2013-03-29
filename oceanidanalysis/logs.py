@@ -12,6 +12,7 @@ import itertools
 import numpy as np
 import scipy as sp
 import h5py
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import gviz_api
@@ -57,7 +58,8 @@ class OceanidLog(h5py.File):
         #       for each deployment.
 
 
-    def timeseries(self, x, return_epoch=False, return_list=False, convert=None):
+    def timeseries(self, x, return_epoch=False, return_list=False, 
+            convert=None, **kw):
         """Extract simple timeseries.
         
         e.g.,   depth, t = slate.timeseries('depth')
@@ -65,7 +67,7 @@ class OceanidLog(h5py.File):
                 etc.
 
         """
-        v = self[x]['value'][:].ravel()
+        v = self[x.replace('.','/')]['value'][:].ravel()
         if convert: 
             v = convert(v)
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
@@ -80,6 +82,7 @@ class OceanidLog(h5py.File):
     def plot_timeseries(self, x, *a, **kw):
         """A convenience function for plotting time-series."""
         v, t = self.timeseries(x, **kw)
+        trash = kw.pop('convert', None)
         if not a: a = '-' # plot a line by default
         if 'label' not in kw: 
             kw.update({'label': x.replace('platform','').replace('_',' ')})
@@ -140,66 +143,130 @@ class OceanidLog(h5py.File):
 
         Originally patterned after vplaneLR.m, by Rob McEwen.
 
+        TODO: go back and insert any useful functionality that is commented
+        out in vplane.m
+
         """
-        fig = plt.figure()
+        #TODO more general multi-axis layout...
+        figwidth = 13 # in inches...
+        figsize = (figwidth, figwidth/oalib.golden_ratio)
+        fig = plt.figure(figsize=figsize,)
         axkw = dict(frameon = True)
-        depth_ax = fig.add_subplot(5,1,1, **axkw)
+        left, width = 0.075, 0.6
+        bh = 0.11
+        pad = 0.04
+        depth_ax = fig.add_axes((left, 6*pad+4.5*bh, width, bh*2), **axkw)
         axkw.update(dict(sharex = depth_ax))
-        pitch_ax = fig.add_subplot(5,1,2, **axkw)
-        buoyancy_mass_ax = fig.add_subplot(5,1,3, **axkw)
-        control_surface_ax = fig.add_subplot(5,1,4, **axkw)
-#        control_mode_ax = fig.add_subplot(5,1,5, **axkw)
-        # TODO adjust scale and coverage for each subplot
-        axs = [depth_ax, pitch_ax, buoyancy_mass_ax, control_surface_ax, ]#control_mode_ax] # list for convenience
+        pitch_ax = fig.add_axes((left, 5*pad+3.5*bh, width, bh), **axkw)
+        buoyancy_ax = fig.add_axes((left, 4*pad+2.5*bh, width, bh), **axkw)
+        mass_ax = fig.add_axes((left, 3*pad + 1.5*bh, width, bh), **axkw)
+        control_surface_ax = fig.add_axes((left, 2*pad + bh/2, width, bh), **axkw)
+        control_mode_ax = fig.add_axes((left, pad, width, bh/2), **axkw)
+        # TODO adjust scale and coverage for each axes
+        axs = [depth_ax, pitch_ax, mass_ax, buoyancy_ax, 
+                control_surface_ax, control_mode_ax] # list for convenience
 
         self.plot_timeseries('depth', '-', axes=depth_ax)
-        try: 
-            self.plot_timeseries('VerticalControl/smoothDepthInternal', 
-                    'r-', axes=depth_ax)
-        except: print 'no VerticalControl/smoothDepthInternal'
-        try:
-            self.plot_timeseries('VerticalControl/depthCmd', 
-                    'g-', axes=depth_ax)
-        except: print 'no VerticalControl/depthCmd'
-        try:
-            self.plot_timeseries('VerticalControl/depthErrorInternal', 
-                    'g:', axes=depth_ax)
-        except: print 'no VerticalControl/depthErrorInternal'
-        try:
-            self.plot_timeseries('VerticalControl/depthRateCmd', 
-                    convert=oalib.make_multiplier(100), 
-                    color='gray', axes=depth_ax)
-        except: print 'no VerticalControl/depthRateCmd'
-
-
-
-
-
-
-        # TODO  Include other lines in this panel
-#        depth_ax.set_ylim([1.1 * self['depth']['value'][:].max(), -1])
-
-        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax)
-        # TODO  Include other lines in this panel
-
-        self.plot_timeseries('platform_mass_position', axes=buoyancy_mass_ax)
-        self.plot_timeseries('platform_buoyancy_position', 
-                axes=buoyancy_mass_ax)
-        # TODO  Include other lines in this panel
-        
-        self.plot_timeseries('platform_elevator_angle', 
-                axes=control_surface_ax)
-        # TODO  Include other lines in this panel
-
+        self.plot_timeseries('platform_pitch_angle', convert=np.rad2deg, 
+                axes=pitch_ax)
+        self.plot_timeseries('platform_mass_position', axes=mass_ax)
+        self.plot_timeseries('platform_buoyancy_position', axes=buoyancy_ax)
+        self.plot_timeseries('platform_elevator_angle', axes=control_surface_ax)
         # TODO  Include another panel with VerticalControl mode (iff present)
+
+        # TODO only if engineering data is requested...
+        ### add to depth axes ###
+        depth_engineering = {
+                'VerticalControl/smoothDepthInternal': 'r-',
+                'VerticalControl/depthCmd': 'g-',
+                'VerticalControl/depthErrorInternal': 'g:'}
+        for k, v in depth_engineering.iteritems():
+            try: self.plot_timeseries(k, v, axes=depth_ax)
+            except: print 'no', k
+        # TODO only if sw debug flag is set 
+        depth_rate_engineering = {
+                'VerticalControl/depthRateCmd': 'gray',
+                'VerticalControl/depth_rate': 'gray', # XXX why same color?
+                }
+        for k, v in depth_rate_engineering.iteritems():
+            try: 
+                self.plot_timeseries(k, vi, axes=depth_ax, 
+                        convert=oalib.make_multiplier(100))
+            except: print 'no', k
+        ### add to pitch axes ###
+        pitch_engineering = {
+                'AHRS_sp3003D/platform_pitch_angle': 'k-', 
+                'DVL_micro/platform_pitch_angle': 'm-',
+                'AHRS_3DMGX3/platform_pitch_angle': 'c-',
+                'InternalSim/platform_pitch_angle': ':r',
+                }
+        for k, v in pitch_engineering.iteritems():
+            try: self.plot_timeseries(k, v, axes=pitch_ax)
+            except: print 'no', k
+        ### add to mass axes ###
+        mass_engineering = {
+                'VerticalControl/massPositionAction': 'g-', 
+                'VerticalControl/massIntegralInternal': 'c-',
+                'MassServo/platform_mass_position': 'r-',
+                }
+        for k, v in mass_engineering.iteritems():
+            try: self.plot_timeseries(k, v, axes=mass_ax)
+            except: print 'no', k
+        ### add to buoyancy axes ###
+        buoyancy_engineering = {
+                'VerticalControl/buoyancyAction': 'm-',
+                'BuoyancyServo/platform_buoyancy_position': 'b-',
+                }
+        for k, v in buoyancy_engineering.iteritems():
+            try: 
+                self.plot_timeseries(k, v,
+                        convert=oalib.make_multiplier(-10), 
+                        axes=buoyancy_ax)
+            except: print 'no', k
+        ### add to control surface axes ###
+        control_surface_engineering = {
+                'VerticalControl/elevatorAngleAction': 'm-', 
+                'VerticalControl/elevatorIntegralInternal': 'm:',
+                'ElevatorServo/platform_elevator_angle': 'b-',
+                ' VerticalControl/massPitchErrorInternal': ':r',
+                }
+        for k, v in control_surface_engineering.iteritems():
+            try: 
+                self.plot_timeseries(k, v, convert = np.rad2deg, 
+                   axes=control_surface_ax)
+            except: print 'no', k
+ 
+
+        # TODO only if supporting data is requested
+        ### add other supporting data ###
+        try: self.plot_timeseries('CTD_NeilBrown/depth', 'k-', axes=depth_ax)
+        except: print 'no CTD_NeilBrown/depth'
+        try: self.plot_timeseries('Depth_MSI_US300', 'm-', axes=depth_ax)
+        except: print 'no Depth_MSI_US300'
+
+
+        ### print additional information ###
+        buoyancyNeutral = ('Config/Control/buoyancyNeutral',
+                'Config/Servo/buoyancyNeutral')
+        for s in buoyancyNeutral:
+            try:
+                print s, '=', self[s+'/value'], self[s+'/units']
+            except:
+                print s, 'not found'
         
+        # TODO make this a small axis in the original figure
+#       VertMd(0=N/A,1=Surf,2=Dep,3=DepRt,4=Pit0,5=Pit,6=PitRt,7=M&E,8=Flt),
+#       VertHoldMd(0=N/A,1=Ms,2=El,3=Both)
+        v, t = self.timeseries('VerticalControl/verticalMode')
+        oalib.plot_date_blocks(t, v, axes=control_mode_ax, colormap=mpl.cm.jet)
+
         depth_ax.invert_yaxis()
         for ax in axs:
             ax.grid(True)
-            ax.legend()
-
-
-
+            # ax.legend(fontsize='small')
+#            fp = mpl.font_manager.FontProperties()
+#            fp.set_size('small')
+            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),)# prop=fp)
 
 
 # TODO decide whether I really want the extra classes below
