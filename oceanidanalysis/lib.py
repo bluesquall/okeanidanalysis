@@ -10,6 +10,8 @@ import time, datetime, pytz, itertools
 import numpy as np
 import scipy as sp
 import scipy.interpolate
+import matplotlib as mpl
+import matplotlib.patches
 
 UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)                         
 
@@ -119,4 +121,32 @@ def gridunravel(ix, iy, iz, returnxy=False, ):
     else: return gz
 
 
+def plot_date_blocks(t, v, axes, colormap=None, unit_height=False, **kw):
+    #TODO logic to check edges & heights for sanity
+#    if kw.has_key('ec') or kw.has_key('edgecolor'): 
+#        pass
+#    else:
+#        kw.update(dict(edgecolor='red'))
+    d = np.diff(v)
+    left = np.hstack((t[0],t[d.nonzero()]))
+    right = np.hstack((t[d.nonzero()],mpl.dates.num2date(axes.get_xlim()[-1])))
+    height = np.hstack((v[d.nonzero()], v[-1]))
+    print height
+    norm_height = height / np.float(np.max(height))
+    for l, r, h, nh  in itertools.izip(left, right, height, norm_height):
+        # draw a rectangle with the appropriate color
+        if colormap:
+            kw.update(dict(color = colormap(nh)))
+        if unit_height: 
+            h = 1 # do this _after_ colormap
+        ll = (mpl.dates.date2num(l),0)
+        w = mpl.dates.date2num(r) - mpl.dates.date2num(l)
+        axes.add_patch(mpl.patches.Rectangle(ll, w, h, **kw))
+    pt = np.vstack((left, right))
+    pv = np.vstack((height, height))
+    print pt.shape, pv.shape
+    axes.plot_date(pt.ravel('F'), pv.ravel('F'), 'k-')
+
+# TODO modify to use PatchCollection and set colors that way
+# http://matplotlib.org/examples/api/patch_collection.html
 
