@@ -15,6 +15,8 @@ import matplotlib.patches
 
 UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)                         
 
+golden_ratio = 1.61803398875
+
 def utime(t, convention=None):
     """Convert time to mircoseconds since epoch.
 
