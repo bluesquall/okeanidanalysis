@@ -254,20 +254,21 @@ class OceanidLog(h5py.File):
             except:
                 print s, 'not found'
         
-        # TODO make this a small axis in the original figure
 #       VertMd(0=N/A,1=Surf,2=Dep,3=DepRt,4=Pit0,5=Pit,6=PitRt,7=M&E,8=Flt),
 #       VertHoldMd(0=N/A,1=Ms,2=El,3=Both)
-        v, t = self.timeseries('VerticalControl/verticalMode')
-        oalib.plot_date_blocks(t, v, axes=control_mode_ax, colormap=mpl.cm.jet)
+        try:
+            v, t = self.timeseries('VerticalControl/verticalMode')
+            oalib.plot_date_blocks(t, v, axes=control_mode_ax, colormap=mpl.cm.jet)
+        except: 
+            print 'VerticalControl/verticalMode', 'not found'
 
         depth_ax.invert_yaxis()
         for ax in axs:
             ax.grid(True)
-            # ax.legend(fontsize='small')
-#            fp = mpl.font_manager.FontProperties()
-#            fp.set_size('small')
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),)# prop=fp)
-
+            try:
+                ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+            except:
+                print 'uncaught exception for legend...'
 
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OceanidLog):
