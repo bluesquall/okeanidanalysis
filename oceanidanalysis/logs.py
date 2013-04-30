@@ -7,7 +7,7 @@ Generally useful methods that span across submodules.
 """
 
 # import cgi # do I actually need this anywhere?
-import itertools
+import datetime, itertools
 
 import numpy as np
 import scipy as sp
@@ -23,8 +23,8 @@ import oceanidanalysis.lib as oalib
 
 class OceanidLog(h5py.File):
 
-    def print_tree(self, verbosity=0): # keep this, it can be useful
-        for k0, i0 in self.items():
+    def print_tree(self, root='/', verbosity=0): 
+        for k0, i0 in self[root].items():
             if isinstance(i0, h5py.Dataset) and verbosity > 0:
                 print 'found level 0 dataset', k0
                 # TODO collect the dataset size
@@ -46,6 +46,9 @@ class OceanidLog(h5py.File):
 #                            else: print 'found unknown', k2
 #                        else: print 'found unknown', k1
 #                    else: print 'found unknown', k0
+
+    def grep_tree(self, pattern):
+        raise NotImplementedError
 
 
     def cat(self, *a):
@@ -95,10 +98,35 @@ class OceanidLog(h5py.File):
             return plt.gca()
 
 
+    def interpolate_trajectory(self, t, **kw):
+        """
+        
+        note: can alternately implement interpolation using:                      
+            sp.interpolate.UnivariateSpline                                 
+            with a small (e.g., 1e-6) smoothing factor...                       
+        """
+        if type(t[0]) is datetime.datetime: tskw = dict(return_epoch=False)
+        elif type(t[0]) in (float, np.float64): 
+            tskw = dict(return_epoch=True)
+        else: 
+            print type(t[0])
+            raise TypeError
+        lat, t_lat = self.timeseries('latitude', **tskw)
+        ilat = sp.interpolate.interp1d(t_lat, lat, **kw)
+        lon, t_lon = self.timeseries('longitude', **tskw)
+        ilon = sp.interpolate.interp1d(t_lon, lon, **kw)
+        dep, t_dep = self.timeseries('depth', **tskw)
+        idep = sp.interpolate.interp1d(t_dep, dep, **kw)
+        return ilon(t), ilat(t), idep(t)       
+
+
     def map_trajectory(self, mapobject, *a, **kw):
-        lats = self['latitude']['value'][:]
-        lons = self['longitude']['value'][:]
-        if self['latitude']['units'][:] is 'radians': # TODO troubleshoot
+        lats = self['latitude/value'][:]
+        lons = self['longitude/value'][:]
+#        print self['latitude/units'][:].ravel().tolist()
+#        print self['longitude/units'][:].ravel().tolist()
+        if self['latitude/units'][:].ravel().tolist() == [110, 47, 97]:
+            #'radians': # TODO troubleshoot
             lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         x, y = mapobject(lons, lats)
         mapobject.plot(x, y, *a, **kw)
@@ -121,8 +149,7 @@ class OceanidLog(h5py.File):
 # TODO move trajectory (time) interpolation tool into this module
 # TODO include an interpolation for trajectory in meters as well
 
-
-    def crossplot(self, x, y, correlation=False, *a, **kw):
+    def comparison_timeseries(self, x, y, *a, **kw):
         #TODO add optional transformations for data in each channel
         x, tx = self.timeseries(x, return_epoch=True)
         y, ty = self.timeseries(y, return_epoch=True)
@@ -130,6 +157,24 @@ class OceanidLog(h5py.File):
         t.sort() # in-place sort
         ix = np.interp(t,tx,x)
         iy = np.interp(t,ty,y)
+        return t, ix, iy
+
+ 
+    def plot_difference_timeseries(self, x, y, *a, **kw):
+        t, ix, iy = self.comparison_timeseries(x, y)
+        t = np.array([datetime.datetime.utcfromtimestamp(e) for e in t])
+        print t.shape, ix.shape, iy.shape
+        if 'axes' in kw: # deal with possible bug in plot_date?
+            ax = kw.pop('axes')
+            ax.plot_date(t, ix - iy, *a, **kw)
+            return ax
+        else: # just make a new axis
+            plt.plot_date(t, ix - iy, *a, **kw)
+            return plt.gca()
+
+
+    def crossplot(self, x, y, correlation=False, *a, **kw):
+        t, ix, iy = self.comparison_timeseries(x, y)
         s = plt.scatter(ix, iy, *a, **kw) # axes, etc pass through
         if correlation:
             raise NotImplementedError
