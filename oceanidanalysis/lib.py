@@ -60,6 +60,26 @@ def make_multiplier(n): return lambda x: x*n
 def make_divider(n): return lambda x: x/n
 
 
+def rmnans(x, *a):
+    """Remove values from array(s), using NaNs in key array.
+
+    Examples
+    --------
+    >>> b = np.array([0,1,nan,3])
+    >>> c = np.ones(b.shape)
+    >>> bn, cn = rmnans(b,c)
+    >>> bn
+    array([ 0.,  1.,  3.])
+    >>> cn
+    array([ 1.,  1.,  1.])
+
+    """
+    mask = np.isnan(x)
+    y = [x[~mask]]
+    for b in a: y.append(b[~mask])
+    return y
+
+
 def gridravel(ix, iy, iz, rmnan=True, returnxy=True):
     """Reduce a grid to three vectors.
 
