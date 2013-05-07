@@ -62,7 +62,7 @@ class OceanidLog(h5py.File):
 
 
     def timeseries(self, x, return_epoch=False, return_list=False, 
-            convert=None, **kw):
+            convert=None, timeslice=None, rmnans=False, **kw):
         """Extract simple timeseries.
         
         e.g.,   depth, t = slate.timeseries('depth')
@@ -76,16 +76,24 @@ class OceanidLog(h5py.File):
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
         if return_epoch: # XXX does this if really slow things down?
             t = oalib.python_datetime_to_unix_epoch(t)
+        t = np.array(t)
+        if timeslice:
+            try:
+                v = v[np.logical_and(t > timeslice[0], t < timeslice[1])]
+                t = t[np.logical_and(t > timeslice[0], t < timeslice[1])]
+            except Exception, e: 
+                raise e # TODO catch common exceptions
+        if rmnans:
+            v, t = oalib.rmnans(v, t)
         if return_list:
-            return v.tolist(), t
-        else: 
-            return v, np.array(t)
+            v, t = v.tolist(), t.tolist()
+        return v, t
 
 
     def plot_timeseries(self, x, *a, **kw):
         """A convenience function for plotting time-series."""
         v, t = self.timeseries(x, **kw)
-        trash = kw.pop('convert', None)
+        for k in ('convert', 'timeslice', 'rmnans'): trash = kw.pop(k, None)
         if not a: a = '-' # plot a line by default
         if 'label' not in kw: 
             kw.update({'label': x.replace('platform','').replace('_',' ')})
