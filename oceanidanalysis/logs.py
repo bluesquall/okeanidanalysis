@@ -124,10 +124,15 @@ class OceanidLog(h5py.File):
             with a small (e.g., 1e-6) smoothing factor...                       
  
         """
-        v, t = self.timeseries(x, return_epoch=True) # r_e faster??
-        interpolant = sp.interpolate.interp1d(t, v, **kw)
+        v, t_v = self.timeseries(x, return_epoch=True) # r_e faster??
+        interpolant = sp.interpolate.interp1d(t_v, v, **kw)
         try: # assume time array is Unix epoch float seconds
             return interpolant(t)
+        except ValueError: # A value in x_new is below the interpolation range.
+            kw.update(dict(bounds_error=False))
+            interpolant = sp.interpolate.interp1d(t_v, v, **kw)
+            return interpolant(t)
+            # TODO clean up
         except Exception, e: # fill in exceptions, like datetime arg
             raise e
         """
@@ -152,8 +157,6 @@ class OceanidLog(h5py.File):
     def map_trajectory(self, mapobject, *a, **kw):
         lats = self['latitude/value'][:]
         lons = self['longitude/value'][:]
-#        print self['latitude/units'][:].ravel().tolist()
-#        print self['longitude/units'][:].ravel().tolist()
         if self.units('latitude') is 'radian':
             lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         x, y = mapobject(lons, lats)
@@ -172,10 +175,8 @@ class OceanidLog(h5py.File):
         depth = self['depth/value'][:]
         northing, easting = projection(longitude, latitude)
         return np.vstack((northing, easting, depth)).T
-
-
-# TODO move trajectory (time) interpolation tool into this module
 # TODO include an interpolation for trajectory in meters as well
+
 
     def comparison_timeseries(self, x, y, *a, **kw):
         #TODO add optional transformations for data in each channel
