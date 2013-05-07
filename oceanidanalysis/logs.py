@@ -61,6 +61,16 @@ class OceanidLog(h5py.File):
         #       for each deployment.
 
 
+    def units(self, x):
+        """Stop-gap method to decode funky units records in HDF5/.mat
+
+        """
+        u = ''.join([chr(d) for d in self[x]['units'][:]])
+        if (u in ['n/a']) and (x in ['latitude', 'longitude']):
+            u = 'radian' # assume radians
+        return u
+
+
     def timeseries(self, x, return_epoch=False, return_list=False, 
             convert=None, timeslice=None, rmnans=False, **kw):
         """Extract simple timeseries.
@@ -106,12 +116,20 @@ class OceanidLog(h5py.File):
             return plt.gca()
 
 
-    def interpolate_trajectory(self, t, **kw):
-        """
-        
+    def interpolate_timeseries(self, x, t, **kw):
+        """Convenience wrapper for sp.interpolate.interp1d
+
         note: can alternately implement interpolation using:                      
             sp.interpolate.UnivariateSpline                                 
             with a small (e.g., 1e-6) smoothing factor...                       
+ 
+        """
+        v, t = self.timeseries(x, return_epoch=True) # r_e faster??
+        interpolant = sp.interpolate.interp1d(t, v, **kw)
+        try: # assume time array is Unix epoch float seconds
+            return interpolant(t)
+        except Exception, e: # fill in exceptions, like datetime arg
+            raise e
         """
         if type(t[0]) is datetime.datetime: tskw = dict(return_epoch=False)
         elif type(t[0]) in (float, np.float64): 
@@ -119,13 +137,16 @@ class OceanidLog(h5py.File):
         else: 
             print type(t[0])
             raise TypeError
-        lat, t_lat = self.timeseries('latitude', **tskw)
-        ilat = sp.interpolate.interp1d(t_lat, lat, **kw)
-        lon, t_lon = self.timeseries('longitude', **tskw)
-        ilon = sp.interpolate.interp1d(t_lon, lon, **kw)
-        dep, t_dep = self.timeseries('depth', **tskw)
-        idep = sp.interpolate.interp1d(t_dep, dep, **kw)
-        return ilon(t), ilat(t), idep(t)       
+        """
+
+
+    def interpolate_trajectory(self, t, return_degrees=True, **kw):
+        lat = self.interpolate_timeseries('latitude', t, **kw)
+        lon = self.interpolate_timeseries('longitude', t, **kw)
+        dep = self.interpolate_timeseries('depth', t, **kw)
+        if return_degrees and self.units('latitude') is 'radian':
+            lat, lon = np.rad2deg(lat), np.rad2deg(lon)
+        return lon, lat, dep
 
 
     def map_trajectory(self, mapobject, *a, **kw):
@@ -133,8 +154,7 @@ class OceanidLog(h5py.File):
         lons = self['longitude/value'][:]
 #        print self['latitude/units'][:].ravel().tolist()
 #        print self['longitude/units'][:].ravel().tolist()
-        if self['latitude/units'][:].ravel().tolist() == [110, 47, 97]:
-            #'radians': # TODO troubleshoot
+        if self.units('latitude') is 'radian':
             lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         x, y = mapobject(lons, lats)
         mapobject.plot(x, y, *a, **kw)
