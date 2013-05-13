@@ -124,7 +124,7 @@ class OceanidLog(h5py.File):
             with a small (e.g., 1e-6) smoothing factor...                       
  
         """
-        v, t_v = self.timeseries(x, return_epoch=True) # r_e faster??
+        v, t_v = self.timeseries(x, rmnans=True, return_epoch=True) # r_e faster??
         interpolant = sp.interpolate.interp1d(t_v, v, **kw)
         try: # assume time array is Unix epoch float seconds
             return interpolant(t)
@@ -157,6 +157,8 @@ class OceanidLog(h5py.File):
     def map_trajectory(self, mapobject, *a, **kw):
         lats = self['latitude/value'][:]
         lons = self['longitude/value'][:]
+        # remove NaNs, since some Proj & basemap tools have trouble w/ them
+        junk, lats, lons = oalib.rmnans(lats + lons, lats, lons)
         if self.units('latitude') is 'radian':
             lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         x, y = mapobject(lons, lats)
@@ -170,12 +172,40 @@ class OceanidLog(h5py.File):
             projection = pyproj.Proj(proj='utm', zone=10, ellps='WGS84')
 
         """
-        latitude = np.rad2deg(self['latitude/value'][:])
-        longitude = np.rad2deg(self['longitude/value'][:])
-        depth = self['depth/value'][:]
-        northing, easting = projection(longitude, latitude)
-        return np.vstack((northing, easting, depth)).T
+        g = np.hstack((self['longitude/value'][:],self['latitude/value'][:]))
+        lat = self['latitude/value'][:]
+        lon = self['longitude/value'][:]
+        dep = self['depth/value'][:]
+        junk, lat, lon, dep = oalib.rmnans(lat + lon, lat, lon, dep)
+#        if self.units('latitude') is 'radian':
+#            lats, lons = np.rad2deg(lats), np.rad2deg(lons)
+        if self.units('latitude') is 'radian': radflag = True
+        else: radflag = False
+        easting, northing = projection(lon, lat, radians=radflag)
+#        print northing.shape, easting.shape, dep.shape
+        return np.vstack((northing, easting, dep))
 # TODO include an interpolation for trajectory in meters as well
+
+
+    def map_meters_trajectory(self, projection, origin=None, **kw):
+        """
+
+        """
+        n, e, d = self.meters_trajectory(projection)
+        if origin in ['mean', 'average']:
+            e0, n0 = e.mean(), n.mean()
+        elif origin is not None:
+            o0, o1, o_unit = origin
+            if o_unit in ['degree', 'deg', 'degrees']: 
+                e0, n0 = projection(o1, o0)
+            elif o_unit in ['meter', 'm', 'meters']:
+                e0, n0 = o0, o1
+            else:
+                raise NotImplementedError('{0} not supported'.format(o_unit))
+        else:
+            e0, n0 = 0, 0
+        plt.plot(e - e0, n - n0, **kw) # plot should take care of axis...
+        return plt.gca(), e0, n0
 
 
     def comparison_timeseries(self, x, y, *a, **kw):
