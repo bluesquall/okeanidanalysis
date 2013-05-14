@@ -47,6 +47,7 @@ class OceanidLog(h5py.File):
 #                        else: print 'found unknown', k1
 #                    else: print 'found unknown', k0
 
+
     def grep_tree(self, pattern):
         raise NotImplementedError
 
@@ -135,14 +136,7 @@ class OceanidLog(h5py.File):
             # TODO clean up
         except Exception, e: # fill in exceptions, like datetime arg
             raise e
-        """
-        if type(t[0]) is datetime.datetime: tskw = dict(return_epoch=False)
-        elif type(t[0]) in (float, np.float64): 
-            tskw = dict(return_epoch=True)
-        else: 
-            print type(t[0])
-            raise TypeError
-        """
+            # return interpolant(oalib.python_datetime_to_unix_epoch(t))
 
 
     def interpolate_trajectory(self, t, return_degrees=True, **kw):
