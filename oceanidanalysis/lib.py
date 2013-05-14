@@ -60,6 +60,15 @@ def make_multiplier(n): return lambda x: x*n
 def make_divider(n): return lambda x: x/n
 
 
+def indexclip(s, e, *a): return [b[int(s):int(e)] for b in a]
+
+
+def angle_difference(a, b, degrees=False):
+    if degrees: p = 180.0
+    else: p = np.pi
+    return np.mod(np.unwrap(a, p) - np.unwrap(b, p) + p, 2 * p) - p
+
+
 def rmnans(x, *a):
     """Remove values from array(s), using NaNs in key array.
 
