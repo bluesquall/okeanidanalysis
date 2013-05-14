@@ -62,6 +62,7 @@ class Map(Basemap):
 
     def drawdefault(self):
         #TODO accept several kw dicts
+        self.drawcoastlines()
         self.fillcontinents(color='coral',lake_color='aqua')
         #self.drawmapboundary(fill_color='aqua')
         self.drawmapboundary()
@@ -212,7 +213,6 @@ class MontereyBay(Map):
 
         """
         plot_kwargs = lib.injectlocals(locals())
-        print plot_kwargs
         mars_lat = 36 + 42.7481/60 #TODO use proj or write a utility for oa.lib
         mars_lon =  -(122 + 11.2139/60)
         mars_depth = 891 # meters
