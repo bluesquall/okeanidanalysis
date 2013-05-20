@@ -13,7 +13,7 @@ mpl.rc('text', usetex=False) # not supported by mplh5canvas
 mpl.use('module://mplh5canvas.backend_h5canvas')
 import matplotlib.pyplot as plt
 
-import oceanidanalysis as oa
+import okeanidanalysis as oa
 bmres = ['l','i','h','f']
 
 # from mplh5canvas/examples/interactive_plot.py

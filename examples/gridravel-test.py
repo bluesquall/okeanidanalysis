@@ -9,7 +9,7 @@ Confirm that oa.lib.gridravel and oa.lib.gridunravel function as inverses.
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-import oceanidanalysis as oa
+import okeanidanalysis as oa
 
 oma = oa.currents.OpenBoundaryModalAnalysis()
 dto = datetime.datetime(2012,10,01,0,0)

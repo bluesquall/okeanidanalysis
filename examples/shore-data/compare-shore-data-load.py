@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-import oceanidanalysis as oa
+import okeanidanalysis as oa
 
 filenameA = '../../data/shore/20130314T133105/shore.mat'
 filenameB = '../../data/shore/20130319T085014/shore.mat'

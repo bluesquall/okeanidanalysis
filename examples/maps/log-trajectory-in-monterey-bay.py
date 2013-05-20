@@ -10,7 +10,7 @@ around Monterey Bay.
 import numpy as np
 import matplotlib.pyplot as plt
 
-import oceanidanalysis as oa
+import okeanidanalysis as oa
 bmres = ['l','i','h','f']
 
 def main(verbose=0, resolution='l', r=None, g=None, 
