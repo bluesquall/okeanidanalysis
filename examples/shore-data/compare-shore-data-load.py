@@ -6,8 +6,8 @@ import okeanidanalysis as oa
 filenameA = '../../data/shore/20130314T133105/shore.mat'
 filenameB = '../../data/shore/20130319T085014/shore.mat'
 
-A = oa.logs.OceanidLog(filenameA,'r')
-B = oa.logs.OceanidLog(filenameB,'r')
+A = oa.logs.OkeanidLog(filenameA,'r')
+B = oa.logs.OkeanidLog(filenameB,'r')
 
 signal = 'mass_concentration_of_chlorophyll_in_sea_water'
 TA = np.diff(A['/'.join((signal,'time'))][[-1,0]].ravel())[0] * 24 # timespan [hours]
