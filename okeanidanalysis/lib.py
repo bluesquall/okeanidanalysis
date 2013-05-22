@@ -1,5 +1,5 @@
 """
-oceanidanalysis.lib
+okeanidanalysis.lib
 ===================
 
 Generally useful methods that span across submodules.

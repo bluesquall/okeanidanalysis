@@ -1,5 +1,5 @@
 """
-oceanidanalysis.logs
+okeanidanalysis.logs
 ====================
 
 Generally useful methods that span across submodules.
@@ -17,11 +17,11 @@ import matplotlib.pyplot as plt
 
 import gviz_api
 
-import oceanidanalysis.lib as oalib
+import okeanidanalysis.lib as oalib
 
-# TODO provide alternate access to netCDF files through OceanidNetCDF?
+# TODO provide alternate access to netCDF files through OkeanidNetCDF?
 
-class OceanidLog(h5py.File):
+class OkeanidLog(h5py.File):
 
     def print_tree(self, root='/', verbosity=0): 
         for k0, i0 in self[root].items():
@@ -54,7 +54,7 @@ class OceanidLog(h5py.File):
 
     def cat(self, *a):
         for filename in a:
-            f = OceanidLog(filename,'r') # open another log read-only
+            f = OkeanidLog(filename,'r') # open another log read-only
 
             f.close()
         raise NotImplementedError
@@ -369,11 +369,11 @@ class OceanidLog(h5py.File):
                 print 'uncaught exception for legend...'
 
 # TODO decide whether I really want the extra classes below
-#class VehicleLog(OceanidLog):
-#class ShoreLog(OceanidLog):
-#class ShipLog(OceanidLog):
+#class VehicleLog(OkeanidLog):
+#class ShoreLog(OkeanidLog):
+#class ShipLog(OkeanidLog):
 
-class GVisLog(OceanidLog):
+class GVisLog(OkeanidLog):
     """Provides extra methods to interface with Google Charts API.
     
     (Really just separated into its own class for taste.)

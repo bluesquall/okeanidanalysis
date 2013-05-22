@@ -1,4 +1,4 @@
-OceanidAnalysis Review Scripts
+OkeanidAnalysis Review Scripts
 ==============================
 
 These scripts are intended to complement, extend, and perhaps eventually

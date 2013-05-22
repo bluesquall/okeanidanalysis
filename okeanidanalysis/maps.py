@@ -1,5 +1,5 @@
 """
-oceanidanalysis.maps
+okeanidanalysis.maps
 ====================
 
 Plotting tools and wrappers to generate common map views of MBARI LRAUV data.
@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
-from oceanidanalysis import lib
+from okeanidanalysis import lib
 
 class Map(Basemap):
     """Subclass of basemap.Basemap with standard colors and boundaries.
