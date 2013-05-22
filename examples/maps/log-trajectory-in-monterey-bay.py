@@ -28,7 +28,7 @@ def main(verbose=0, resolution='l', r=None, g=None,
     else: m.drawdefault()
     if g: m.drawgrid()
 
-    slate = oa.logs.OkeanidLog(infile.name)
+    slate = oa.logs.OkeanidLog(infile.name, 'r')
     slate.map_trajectory(m,)
 
     if outfile: plt.savefig(outfile) #TODO save args...
