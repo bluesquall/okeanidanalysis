@@ -82,6 +82,7 @@ class OkeanidLog(h5py.File):
 
         """
         v = self[x.replace('.','/')]['value'][:].ravel()
+        # TODO it seems like the replace statement above is not getting evaluated
         if convert: 
             v = convert(v)
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
