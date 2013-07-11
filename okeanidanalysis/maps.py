@@ -54,8 +54,10 @@ class Map(Basemap):
         Basemap.drawmeridians(self, circles, **kwargs)
 
     
-    def drawgrid(self, lats=None, lons=None, **kwargs):
+    def drawgrid(self, lats=None, lons=None, 
+            color='0.5', linewidth=0.5, dashes=[1, 0], **kwargs):
         """Draw a grid of latitude and longitude lines."""
+        kwargs.update(dict(color=color, linewidth=linewidth, dashes=dashes))
         self.drawparallels(circles=lats, **kwargs)
         self.drawmeridians(circles=lons, **kwargs)
 
