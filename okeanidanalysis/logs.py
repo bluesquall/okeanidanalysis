@@ -23,6 +23,13 @@ import okeanidanalysis.lib as oalib
 
 class OkeanidLog(h5py.File):
 
+    def __init__(self, name, mode='r', **kw):
+        """Overloaded init method for h5py.File (read-only by default).
+
+        """
+        h5py.File.__init__(self, name, mode, **kw)
+
+
     def print_tree(self, root='/', verbosity=0): 
         for k0, i0 in self[root].items():
             if isinstance(i0, h5py.Dataset) and verbosity > 0:
