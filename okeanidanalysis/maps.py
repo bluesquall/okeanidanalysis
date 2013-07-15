@@ -111,7 +111,8 @@ class Map(Basemap):
         raise NotImplementedError
 #TODO a track that changes color based on an ancillary variable
 
-    def draw_currents(self, lat, lon, u, v, contourf_magnitude=True, **kwargs):
+    def draw_currents(self, lat, lon, u, v, contourf_magnitude=True, 
+            delta_current = 0.01, max_current = 1.0, **kwargs):
         """Quiver plot the ocean current.
         
         """
@@ -123,10 +124,7 @@ class Map(Basemap):
         #TODO   optional input/output of *m variables above...
         if contourf_magnitude: 
             mm = (um**2 + vm**2)**0.5 # 2D current magnitude
-            dc = 0.01
-#TODO            cmax = max(mm) + dc 
-            cmax = 0.5 + dc
-            mmlevels = np.arange(0, cmax, dc) 
+            mmlevels = np.arange(0, max_current, delta_current) 
             self.contourf(xm, ym, mm, mmlevels, cmap=plt.cm.Blues)
             self.colorbar() #TODO pass kwargs
         q = self.quiver(xm, ym, um, vm, **kwargs) 
