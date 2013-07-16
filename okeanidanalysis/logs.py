@@ -157,8 +157,13 @@ class OkeanidLog(h5py.File):
 
 
     def map_trajectory(self, mapobject, *a, **kw):
-        lats = self['latitude/value'][:]
-        lons = self['longitude/value'][:]
+        try:
+            timeslice = kw.pop('timeslice')
+            lats, t = self.timeseries('latitude', timeslice=timeslice)
+            lons, t = self.timeseries('longitude', timeslice=timeslice)
+        except KeyError:
+            lats = self['latitude/value'][:]
+            lons = self['longitude/value'][:]
         # remove NaNs, since some Proj & basemap tools have trouble w/ them
         junk, lats, lons = oalib.rmnans(lats + lons, lats, lons)
         if self.units('latitude') is 'radian':
