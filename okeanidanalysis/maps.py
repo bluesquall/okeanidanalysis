@@ -104,11 +104,29 @@ class Map(Basemap):
         raise NotImplementedError
 
 
-    def draw_track(self, track, **kwargs):
+    def draw_track(self, lat, lon, *a, **kw):
         """Draw a position track on the map (e.g., from Tethys or Daphne).
 
+        Parameters
+        ----------
+        lat : array-like
+            Latitude, in decimal degrees.
+        lon : array-like
+            Longitude, in decimal degrees.
+
+        Returns
+        -------
+        track : (matplotlib line)
+
+        TODO Add optional kwargs to perform conversions on lat/lon?
+
+        Any additional args or kwargs are passed to self.plot
+
         """
-        raise NotImplementedError
+        # remove NaNs, since some Proj & basemap tools have trouble w/ them
+        junk, lat, lon = lib.rmnans(lat + lon, lat, lon)
+        x, y = self(lon, lat) # convert to map plotting coordinates
+        self.plot(x, y, *a, **kw)
 #TODO a track that changes color based on an ancillary variable
 
     def draw_currents(self, lat, lon, u, v, contourf_magnitude=True, 

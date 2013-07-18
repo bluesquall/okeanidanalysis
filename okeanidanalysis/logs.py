@@ -157,6 +157,7 @@ class OkeanidLog(h5py.File):
 
 
     def map_trajectory(self, mapobject, *a, **kw):
+        raise DeprecationWarning("use map_track instead")
         try:
             timeslice = kw.pop('timeslice')
             lats, t = self.timeseries('latitude', timeslice=timeslice)
@@ -170,6 +171,19 @@ class OkeanidLog(h5py.File):
             lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         x, y = mapobject(lons, lats)
         mapobject.plot(x, y, *a, **kw)
+
+
+    def map_track(self, mapobject, *a, **kw):
+        try:
+            timeslice = kw.pop('timeslice')
+            lats, t = self.timeseries('latitude', timeslice=timeslice)
+            lons, t = self.timeseries('longitude', timeslice=timeslice)
+        except KeyError:
+            lats = self['latitude/value'][:]
+            lons = self['longitude/value'][:]
+        if self.units('latitude') is 'radian':
+            lats, lons = np.rad2deg(lats), np.rad2deg(lons)
+        mapobject.draw_track(lats, lons, *a, **kw)
 
 
     def meters_trajectory(self, projection):
