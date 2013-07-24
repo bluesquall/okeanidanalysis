@@ -144,3 +144,72 @@ def slant_range_and_depths_to_horizontal_range(r, d1, d2):
     """
     return (r**2 - (d1 - d2)**2) **0.5
 
+
+def loadmtx(filename):
+    """Read matrix from `.mtx` file
+
+    The first two elements in a `.mtx` file are matrix dimensions encoded as 
+    32-bit integers, and the rest of the file is a column major matrix of 
+    single precision (i.e., 32-bit float).
+
+    Note that the endianness may be different depending on platform, so 
+    `.mtx` files may not be portable. This method is primarily intended to
+    handle files sent to and from vehicles in the field over low-badwidth
+    communication channels (e.g., Iridium SBD), and for development on
+    techniques that use those files. Please use HDF5, NetCDF, MATLAB, or 
+    numpy.save methods for any other use cases.
+
+    Parameters
+    ----------
+    filename : str
+        The file to load the matrix from.
+
+    Returns
+    -------
+    a : array
+        A numpy array containing the matrix saved in the file.
+
+    Examples
+    --------
+    TODO
+
+    See also: savemtx, numpy.fromfile, numpy.save, numpy.savez
+
+    """
+    with open(filename, 'rb') as f:
+        shape = np.fromfile(file=f, dtype=np.int32, count=2)[::-1]
+        return np.fromfile(file=f, dtype=np.float32).reshape(shape).T
+
+
+def savemtx(a, filename):
+    """Save array as a matrix in a `.mtx` file
+
+    The first two elements in a `.mtx` file are matrix dimensions encoded as 
+    32-bit integers, and the rest of the file is a column major matrix of 
+    single precision (i.e., 32-bit float).
+
+    Note that the endianness may be different depending on platform, so 
+    `.mtx` files may not be portable. This method is primarily intended to
+    handle files sent to and from vehicles in the field over low-badwidth
+    communication channels (e.g., Iridium SBD), and for development on
+    techniques that use those files. Please use HDF5, NetCDF, MATLAB, or 
+    numpy.save methods for any other use cases.
+
+    Parameters
+    ----------
+    a : array-like
+        The array to be saved.
+    filename : str
+        The file to load the matrix from.
+
+    Examples
+    --------
+    TODO
+
+    See also: loadmtx, numpy.fromfile, numpy.save, numpy.savez
+
+    """
+    with open(filename, 'wb') as f:
+        f.write(np.array(a.shape, dtype=np.int32).tostring(order='F'))
+        f.write(a.astype(np.float32).tostring(order='F'))
+
