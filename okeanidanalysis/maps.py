@@ -131,26 +131,22 @@ class Map(Basemap):
 
     def draw_currents(self, x, y, u, v, latlon=True,
             quiver=True, contour=None, contourf='magnitude', 
-            delta_current = 0.01, max_current = 1.0, 
-            quiver_stride=1, contourf_stride=1, **kwargs):
+            max_current = 1.0, **kwargs):
         """Quiver plot the ocean current.
         
         """
-        # TODO: re-order the kwargs
         # TODO: add default args for quiver scaling
         retdict = {}
         kwargs.update(latlon=latlon)
         m = (u**2 + v**2)**0.5 # 2D current magnitude
-        # TODO change to keyword-based layers: 
-        #       magnitude = None, [contourf], contour, arrowcolor
-        #       vorticity = [None], contourf, contour
         if contourf:
             cfargs = [x,y]
             if contourf == 'magnitude': 
                 cfargs.append(m) 
                 cfargs.append(100) 
                 # cfargs.append(np.arange(0, max_current, delta_current)) 
-                kwargs.update(cmap=plt.cm.Blues, clim=[0,max_current]) # TODO: don't overwrite
+                kwargs.update(cmap=plt.cm.Blues) # TODO: don't overwrite
+                kwargs.update(clim=[0,max_current]) # TODO: don't overwrite
             elif contourf == 'vorticity':
                 # TODO actually calculate vorticity, if needed
                 cfargs.append(omega) 
@@ -161,25 +157,18 @@ class Map(Basemap):
             else:
                 raise NotImplementedError # TODO: fill this in
             cf = self.contourf(*cfargs, **kwargs)
-#            cf = self.contourf(x[::contourf_stride,::contourf_stride], 
-#                    y[::contourf_stride,::contourf_stride], 
-#                    m[::contourf_stride,::contourf_stride], 
-#                    mlevels, cmap=plt.cm.Blues, **kwargs)
             cb = self.colorbar(cf) # TODO: pass relevant kwargs
             retdict.update(contourf = cf, colorbar = cb)
+        if contour:
+            raise NotImplementedError # TODO: fill this in
         if quiver:
             qargs = [x,y,u,v]
             if quiver == 'arrowcolor':
                 qargs.append(m)
                 kwargs.update(clim = [0, max_current]) 
             q = self.quiver(*qargs, **kwargs) # TODO: sanitize kwargs...
-#            q = self.quiver(x[::quiver_stride,::quiver_stride], 
-#                    y[::quiver_stride,::quiver_stride], 
-#                    u[::quiver_stride,::quiver_stride], 
-#                    v[::quiver_stride,::quiver_stride], **kwargs) 
-            #or specify, e.g., width=0.003, scale=400)
             retdict.update(quiver = q)
-        # qkey = plt.quiverkey(q, 0.1, -0.2, 1, '1 m/s', labelpos='W') 
+            # qkey = plt.quiverkey(q, 0.1, -0.2, 1, '1 m/s', labelpos='W') 
             # TODO: figure out a consistent way to make sure the quiver key
             # appears over land
         return retdict
