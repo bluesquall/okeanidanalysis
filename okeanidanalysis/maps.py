@@ -7,6 +7,7 @@ Plotting tools and wrappers to generate common map views of MBARI LRAUV data.
 """
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
@@ -131,7 +132,8 @@ class Map(Basemap):
 
     def draw_currents(self, x, y, u, v, latlon=True,
             quiver=True, contour=None, contourf='magnitude', 
-            max_current = 1.0, **kwargs):
+            colorbar=None,
+            max_current = 1.0, delta_current = 0.01, **kwargs):
         """Quiver plot the ocean current.
         
         """
@@ -139,14 +141,17 @@ class Map(Basemap):
         retdict = {}
         kwargs.update(latlon=latlon)
         m = (u**2 + v**2)**0.5 # 2D current magnitude
+        mlevels = np.arange(0, max_current + delta_current, delta_current) 
         if contourf:
             cfargs = [x,y]
+            cbkwargs = {}
             if contourf == 'magnitude': 
                 cfargs.append(m) 
-                cfargs.append(100) 
-                # cfargs.append(np.arange(0, max_current, delta_current)) 
+                #cfargs.append(100) 
+                cfargs.append(mlevels) 
                 kwargs.update(cmap=plt.cm.Blues) # TODO: don't overwrite
-                kwargs.update(clim=[0,max_current]) # TODO: don't overwrite
+                #kwargs.update(clim=[0,max_current]) # TODO: don't overwrite
+                cbkwargs.update(ticks=matplotlib.ticker.MultipleLocator(0.1))
             elif contourf == 'vorticity':
                 # TODO actually calculate vorticity, if needed
                 cfargs.append(omega) 
@@ -157,8 +162,10 @@ class Map(Basemap):
             else:
                 raise NotImplementedError # TODO: fill this in
             cf = self.contourf(*cfargs, **kwargs)
-            cb = self.colorbar(cf) # TODO: pass relevant kwargs
-            retdict.update(contourf = cf, colorbar = cb)
+            retdict.update(contourf = cf)
+        if contourf and colorbar:
+            cb = self.colorbar(cf, **cbkwargs)
+            retdict.update(colorbar = cb)
         if contour:
             raise NotImplementedError # TODO: fill this in
         if quiver:
