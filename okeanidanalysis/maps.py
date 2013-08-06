@@ -132,8 +132,10 @@ class Map(Basemap):
 
     def draw_currents(self, x, y, u, v, latlon=True,
             quiver=True, contour=None, contourf='magnitude', 
+            imshow=None,
             colorbar=None,
-            max_current = 1.0, delta_current = 0.01, **kwargs):
+            max_current = 1.0, delta_current = 0.01,
+            imres = 100, **kwargs):
         """Quiver plot the ocean current.
         
         """
@@ -163,9 +165,6 @@ class Map(Basemap):
                 raise NotImplementedError # TODO: fill this in
             cf = self.contourf(*cfargs, **kwargs)
             retdict.update(contourf = cf)
-        if contourf and colorbar:
-            cb = self.colorbar(cf, **cbkwargs)
-            retdict.update(colorbar = cb)
         if contour:
             raise NotImplementedError # TODO: fill this in
         if quiver:
@@ -178,6 +177,40 @@ class Map(Basemap):
             # qkey = plt.quiverkey(q, 0.1, -0.2, 1, '1 m/s', labelpos='W') 
             # TODO: figure out a consistent way to make sure the quiver key
             # appears over land
+        if imshow:
+            imargs = []
+            imkwargs = {}
+            # TODO: Consider using this as an alternative to contourf to enable
+            # easy updating of defined colored backgrounds (e.g., magnitude or
+            # vorticity in a movie of surface currents).
+            if imshow == 'etopo':
+                raise NotImplementedError # TODO: fill this in
+            elif imshow == 'bathymetry':
+                raise NotImplementedError # TODO: fill this in
+            elif imshow == 'magnitude':
+                # TODO: refactor with contourf above to remove redundant code
+                nx = int((self.xmax-self.xmin)/imres)+1
+                ny = int((self.ymax-self.ymin)/imres)+1
+                # TODO: actually write out the image using same number of
+                # entries as in lat/lon inputs by default (i.e., if imres=None)
+                xu = np.unique(x.ravel()) # TODO: use latlon kw to determine input
+                yu = np.unique(y.ravel()) # TODO: use latlon kw to determine input
+                mm = self.transform_scalar(m, xu, yu, nx, ny)
+                imargs.append(mm)
+                imkwargs.update(cmap=plt.cm.Blues) # TODO: don't overwrite
+                imkwargs.update(vmin=0, vmax=max_current) # TODO: don't overwrite
+            elif imshow == 'vorticity':
+                raise NotImplementedError # TODO: fill this in
+            im = self.imshow(*imargs, **imkwargs)
+            retdict.update(imshow=im, imshow_nx=nx, imshow_ny=ny)
+        if colorbar:
+            if contourf in ['magnitude', 'vorticity']:
+                cb = self.colorbar(cf, **cbkwargs)
+            elif imshow in ['magnitude', 'vorticity']:
+                cb = self.colorbar(im, **cbkwargs)
+            # TODO: handle other cases...
+            retdict.update(colorbar = cb)
+
         return retdict
 
 
