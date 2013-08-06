@@ -29,7 +29,7 @@ def main(verbose=0, resolution='l', r=None, g=None,
     if g: m.drawgrid()
 
     slate = oa.logs.OkeanidLog(infile.name, 'r')
-    slate.map_trajectory(m,)
+    slate.map_track(m,)
 
     if outfile: plt.savefig(outfile) #TODO save args...
     else: plt.show()
