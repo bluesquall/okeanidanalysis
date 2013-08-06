@@ -411,6 +411,7 @@ class GVisLog(OkeanidLog):
         """Create a DataTable for the Google Charts API.
 
         """
+        kw.update(return_epoch=False,) # otherwise LoadData won't work
         description = { 'group': ('number', group),
                         'time': ('datetime', 'time') }
         data = [{'group': float(v), 'time': t} for v,t 
@@ -420,7 +421,7 @@ class GVisLog(OkeanidLog):
         return table
         
 
-    def timeseries_to_json_response(self, form, group, *a, **kw):
+    def timeseries_to_json_response(self, form, group, **kw):
         """Generate a full API-compliant response to serve timeseries data.
 
         Parameters
@@ -464,6 +465,6 @@ class GVisLog(OkeanidLog):
         #    jsrkw.update(responseHandler=tqx['responseHandler'])
         #if 'outFileName' in tqx: 
         #    raise NotImplementedError
-        table = self.timeseries_to_gviz_data_table(group, *a, **kw)
+        table = self.timeseries_to_gviz_data_table(group, **kw)
         return "Content-type: text/plain\n\n" + table.ToJSonResponse(**jsrkw)
     
