@@ -7,3 +7,6 @@
 *~
 # ignore easy_install or pip directories
 *.egg-info
+
+# ignore IDEA files
+.idea
