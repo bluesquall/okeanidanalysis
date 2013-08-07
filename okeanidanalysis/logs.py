@@ -466,5 +466,5 @@ class GVisLog(OkeanidLog):
         #if 'outFileName' in tqx: 
         #    raise NotImplementedError
         table = self.timeseries_to_gviz_data_table(group, **kw)
-        return "Content-type: text/plain\n\n" + table.ToJSonResponse(**jsrkw)
+        return table.ToJSonResponse(**jsrkw)
     
