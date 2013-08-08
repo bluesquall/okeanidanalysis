@@ -1,0 +1,14 @@
+argparse==1.2.1
+basemap==1.0.6
+gviz-api.py==1.8.2
+h5py==2.2.0b1
+matplotlib==1.3.0
+nose==1.3.0
+numpy==1.7.1
+-e git+git@mjstex.mbari.org:okeanidanalysis.git@c2f80b6371216999bd09ec2036d4b9d057ed775c#egg=okeanidanalysis-dev
+pyparsing==2.0.1
+python-dateutil==2.1
+pytz==2013b
+scipy==0.12.0
+six==1.3.0
+tornado==3.1
