@@ -189,20 +189,31 @@ class Map(Basemap):
                 raise NotImplementedError # TODO: fill this in
             elif imshow == 'magnitude':
                 # TODO: refactor with contourf above to remove redundant code
-                nx = int((self.xmax-self.xmin)/imres)+1
-                ny = int((self.ymax-self.ymin)/imres)+1
-                # TODO: actually write out the image using same number of
-                # entries as in lat/lon inputs by default (i.e., if imres=None)
-                xu = np.unique(x.ravel()) # TODO: use latlon kw to determine input
-                yu = np.unique(y.ravel()) # TODO: use latlon kw to determine input
-                mm = self.transform_scalar(m, xu, yu, nx, ny)
-                imargs.append(mm)
+                if latlon:
+                    nx = int((self.xmax-self.xmin)/imres)+1
+                    ny = int((self.ymax-self.ymin)/imres)+1
+                    # TODO: actually write out the image using same number of
+                    # entries as in lat/lon inputs by default (i.e., if imres=None)
+                    xu = np.unique(x.ravel())
+                    yu = np.unique(y.ravel())
+                    mm = self.transform_scalar(m, xu, yu, nx, ny)
+                    imargs.append(mm)
+                    retdict.update(imshow_nx=nx, imshow_ny=ny)
+                else:
+                    imargs.append(m)
                 imkwargs.update(cmap=plt.cm.Blues) # TODO: don't overwrite
                 imkwargs.update(vmin=0, vmax=max_current) # TODO: don't overwrite
             elif imshow == 'vorticity':
+                if latlon:
+                    nx = int((self.xmax-self.xmin)/imres)+1
+                    ny = int((self.ymax-self.ymin)/imres)+1
+                    xu = np.unique(x.ravel())
+                    yu = np.unique(y.ravel())
+                    mu, mv = self.transform_vector(u, v, xu, yu, nx, ny)
+                    # TODO use np.gradient here
                 raise NotImplementedError # TODO: fill this in
             im = self.imshow(*imargs, **imkwargs)
-            retdict.update(imshow=im, imshow_nx=nx, imshow_ny=ny)
+            retdict.update(imshow=im)
         if colorbar:
             if contourf in ['magnitude', 'vorticity']:
                 cb = self.colorbar(cf, **cbkwargs)
