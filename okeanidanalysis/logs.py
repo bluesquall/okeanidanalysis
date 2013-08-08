@@ -121,6 +121,7 @@ class OkeanidLog(h5py.File):
         if 'axes' in kw: # deal with possible bug in plot_date?
             ax = kw.pop('axes')
             ax.plot_date(t, v, *a, **kw)
+            ax.set_xlim(ax.xaxis.get_data_interval()) # update time limits
             return ax
         else: # just make a new axis
             plt.plot_date(t, v, *a, **kw)
