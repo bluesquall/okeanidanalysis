@@ -111,11 +111,13 @@ class OkeanidLog(h5py.File):
 
     def plot_timeseries(self, x, *a, **kw):
         """A convenience function for plotting time-series."""
+        kw.update(return_epoch=False)
         v, t = self.timeseries(x, **kw)
-        for k in ('convert', 'timeslice', 'rmnans'): trash = kw.pop(k, None)
+        for k in ('return_epoch', 'convert', 'timeslice', 'rmnans'): 
+            trash = kw.pop(k, None)
         if not a: a = '-' # plot a line by default
         if 'label' not in kw: 
-            kw.update({'label': x.replace('platform','').replace('_',' ')})
+            kw.update({'label': x.replace('platform ','').replace('_',' ')})
         if 'axes' in kw: # deal with possible bug in plot_date?
             ax = kw.pop('axes')
             ax.plot_date(t, v, *a, **kw)
