@@ -3,3 +3,6 @@ netCDF reader or examples
 deployment track
 CTD timeseries
 HF Radar currents overlay
+
+OkeanidLog.plot_timeseries support for vector timeseries, exception for matrix timeseries
+
