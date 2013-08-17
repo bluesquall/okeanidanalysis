@@ -177,8 +177,8 @@ def loadmtx(filename):
 
     """
     with open(filename, 'rb') as f:
-        s = np.fromfile(file=f, dtype=np.int32, count=2)
-        return np.fromfile(file=f, dtype=np.float32).reshape(s, order='F').T
+        shape = np.fromfile(file=f, dtype=np.int32, count=2)[::-1]
+        return np.fromfile(file=f, dtype=np.float32).reshape(shape).T
 
 
 def savemtx(a, filename):
