@@ -177,10 +177,10 @@ def loadmtx(filename):
 
     """
     with open(filename, 'rb') as f:
-        shape = np.fromfile(file=f, dtype=np.int32, count=2)[::-1] 
+        shape = np.fromfile(file=f, dtype=np.int32, count=2) 
         # not sure why the .mtx file has its dimensions flipped, but this 
         # reads consistent with SF's fort_read & fort_readColumns
-        return np.fromfile(file=f, dtype=np.float32).reshape(shape, order='F')
+        return np.fromfile(file=f,dtype=np.float32).reshape(shape,order='F').T
 
 
 def savemtx(a, filename):
