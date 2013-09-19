@@ -299,11 +299,20 @@ class OkeanidLog(h5py.File):
                 axes=pitch_ax)
         self.plot_timeseries('platform_mass_position', axes=mass_ax)
         self.plot_timeseries('platform_buoyancy_position', axes=buoyancy_ax)
-        self.plot_timeseries('platform_elevator_angle', axes=control_surface_ax)
+        self.plot_timeseries('platform_elevator_angle', 
+                convert=np.rad2deg, axes=control_surface_ax)
         # TODO  Include another panel with VerticalControl mode (iff present)
 
         # TODO only if engineering data is requested...
         ### add to depth axes ###
+        depth_science = {
+                'Depth_Keller/depth': 'c-',
+                'CTD_NeilBrown/depth': 'k-',
+                'Depth_MSI_US300/depth': 'm-'}
+        for k, v in depth_science.iteritems():
+            try: self.plot_timeseries(k, v, axes=depth_ax)
+            except: print 'no', k
+
         depth_engineering = {
                 'VerticalControl/smoothDepthInternal': 'r-',
                 'VerticalControl/depthCmd': 'g-',
@@ -336,6 +345,7 @@ class OkeanidLog(h5py.File):
                 'VerticalControl/massPositionAction': 'g-', 
                 'VerticalControl/massIntegralInternal': 'c-',
                 'MassServo/platform_mass_position': 'r-',
+                #'VerticalControl/massPitchErrorInternal': ':r',
                 }
         for k, v in mass_engineering.iteritems():
             try: self.plot_timeseries(k, v, axes=mass_ax)
@@ -355,8 +365,7 @@ class OkeanidLog(h5py.File):
         control_surface_engineering = {
                 'VerticalControl/elevatorAngleAction': 'm-', 
                 'VerticalControl/elevatorIntegralInternal': 'm:',
-                'ElevatorServo/platform_elevator_angle': 'b-',
-                ' VerticalControl/massPitchErrorInternal': ':r',
+                'ElevatorServo/platform_elevator_angle': 'c-',
                 }
         for k, v in control_surface_engineering.iteritems():
             try: 
