@@ -6,7 +6,6 @@ Generally useful methods that span across submodules.
 
 """
 
-# import cgi # do I actually need this anywhere?
 import datetime, itertools
 
 import numpy as np
@@ -14,8 +13,6 @@ import scipy as sp
 import h5py
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-import gviz_api
 
 import okeanidanalysis.lib as oalib
 
@@ -411,72 +408,3 @@ class OkeanidLog(h5py.File):
 #class VehicleLog(OkeanidLog):
 #class ShoreLog(OkeanidLog):
 #class ShipLog(OkeanidLog):
-
-class GVisLog(OkeanidLog):
-    """Provides extra methods to interface with Google Charts API.
-    
-    (Really just separated into its own class for taste.)
-    
-    """
-    
-    def timeseries_to_gviz_data_table(self, group, **kw):
-        """Create a DataTable for the Google Charts API.
-
-        """
-        kw.update(return_epoch=False,) # otherwise LoadData won't work
-        description = { 'group': ('number', group),
-                        'time': ('datetime', 'time') }
-        data = [{'group': float(v), 'time': t} for v,t 
-                in itertools.izip(*self.timeseries(group, **kw))]
-        table = gviz_api.DataTable(description)
-        table.LoadData(data)
-        return table
-        
-
-    def timeseries_to_json_response(self, form, group, **kw):
-        """Generate a full API-compliant response to serve timeseries data.
-
-        Parameters
-        ----------
-        form : an instance of cgi.FieldStorage() using psl cgi
-        
-        group : string
-            points to the timeseries of interest, e.g., sea_water_temperature
-
-        Returns
-        -------
-        response : string
-            contains the content header, separation, and google.visualization.Query.setResponse
-
-        References
-        ----------
-        https://developers.google.com/chart/interactive/docs/dev/implementing_data_source#responseformat
-
-        """
-        tqxstr = form.getfirst('tqx')
-        if not tqxstr:
-            tqx = {} # empty dict, and probably bad request...
-        else:
-            tqx = dict([p.split(':') for p in tqxstr.split(';')])
-
-        jsrkw = dict(columns_order=('time', 'group'), order_by='time',
-# XXX not handled yet...                responseHandler='google.visualization.Query.setResponse',
-                )
-
-        if 'version' in tqx: 
-            jsrkw.update(version=tqx['version'])
-        if 'reqId' in tqx: 
-            jsrkw.update(req_id=tqx['reqId'])
-        # TODO handle status other than OK...
-        # TODO handle sig... if sig in tqx: jsrkw.update(req_id=tqx['reqId'])
-        if 'out' in tqx: 
-            if tqx['out'] is not 'json': 
-                raise NotImplementedError
-        # TODO these are _supposed_ to be defined and handled...
-        #if 'responseHandler' in tqx: 
-        #    jsrkw.update(responseHandler=tqx['responseHandler'])
-        #if 'outFileName' in tqx: 
-        #    raise NotImplementedError
-        table = self.timeseries_to_gviz_data_table(group, **kw)
-        return table.ToJSonResponse(**jsrkw)
-    
