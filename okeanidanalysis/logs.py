@@ -2,11 +2,11 @@
 okeanidanalysis.logs
 ====================
 
-Generally useful methods that span across submodules.
-
 """
 
-import datetime, itertools
+import os
+import datetime
+import itertools
 
 import numpy as np
 import scipy as sp
@@ -288,8 +288,7 @@ class OkeanidLog(h5py.File):
         control_surface_ax = fig.add_axes((left, 2*pad + bh/2, width, bh), **axkw)
         control_mode_ax = fig.add_axes((left, pad, width, bh/2), **axkw)
         # TODO adjust scale and coverage for each axes
-        axs = [depth_ax, pitch_ax, mass_ax, buoyancy_ax, 
-                control_surface_ax, control_mode_ax] # list for convenience
+        # TODO do this again now that middle labels are removed
 
         self.plot_timeseries('depth', '-', axes=depth_ax)
         self.plot_timeseries('platform_pitch_angle', convert=np.rad2deg, 
@@ -397,12 +396,17 @@ class OkeanidLog(h5py.File):
             print 'VerticalControl/verticalMode', 'not found'
 
         depth_ax.invert_yaxis()
-        for ax in axs:
+        for ax in fig.get_axes():
             ax.grid(True)
             try:
-                ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+                ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),
+                        fontsize='small')
             except:
                 print 'uncaught exception for legend...'
+        for ax in fig.get_axes()[:-1]:
+            plt.setp(ax.get_xticklabels(), visible=False)
+
+        depth_ax.set_title(os.path.basename(self.filename))
 
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OkeanidLog):
