@@ -73,3 +73,15 @@ I believe the basemap distribution includes a copy of libgeos, just in case, but
 
 ### Table of non-python dependencies and suggested packages:
 **TODO** make this for Ubuntu 12.04 and CentOS 6, at least.
+
+example shell script for pip install
+------------------------------------
+```Shell
+sudo pip install numpy
+sudo pip install scipy
+sudo pip install matplotlib
+sudo pip install h5py
+sudo pip install ipython
+sudo pip install pyproj
+sudo pip install https://github.com/matplotlib/basemap/archive/v1.0.6rel.tar.gz#egg=basemap
+```
