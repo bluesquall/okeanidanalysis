@@ -1,0 +1,64 @@
+Load the data
+Start ipython:
+ipython --pylab
+
+In [2]: import okeanidanalysis as oa
+In [2]: fileName='/mbari/LRAUV/tethys/missionlogs/2013/20130920_20131007/20130930T114115/science_201309301141_201310070703.mat'
+In [3]: slate=oa.logs.OkeanidLog(fileName)
+
+Plot using vplane
+In [4]: slate.vplane()
+
+
+Plot a specific variable:
+In [5]: figure()
+In [6]: slate.plot_timeseries('platform_roll_angle')
+In [7]: slate.plot_timeseries('CBIT/GFCHAN0Current')
+
+
+Need Help?
+In [11]: slate.plot_timeseries?
+Type:       instancemethod
+String Form:<bound method OkeanidLog.plot_timeseries of <HDF5 file "science_201309301141_201310070703.mat" (mode r)>>
+File:       /usr/local/lib/python2.6/dist-packages/okeanidanalysis/logs.py
+Definition: slate.plot_timeseries(self, x, *a, **kw)
+Docstring:  A convenience function for plotting time-series.
+
+In [17]: plot?
+
+
+Variable manipulation:
+In [17]: roll,troll=slate.timeseries('platform_roll_angle')
+In [18]: rollradians=np.deg2rad(roll)
+In [19]: roll10x=10*roll
+
+In [25]: roll.argmax()
+Out[25]: 22878
+
+In [26]: roll[22878]
+Out[26]: 179.38477
+
+In [27]: roll[roll.argmin()]
+Out[27]: -27.46582
+
+
+n [29]: slate['platform_roll_angle/value']
+Out[29]: <HDF5 dataset "value": shape (1435238, 1), type "<f4">
+
+In [30]: slate['platform_roll_angle/value'][:]
+
+
+What's in the slate?
+slate.print_tree() 
+slate.print_tree('CBIT')
+
+
+Legend:
+legend?
+legend()
+
+Axis:
+OO method- 
+ax=gca()
+ax.set.....
+ax.legend()
