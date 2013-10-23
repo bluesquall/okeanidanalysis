@@ -31,6 +31,16 @@ You will need:
 * scipy
 
 * matplotlib
+  
+  * libpng
+  
+  * libfreetype
+
+  * pyparsing
+
+  * tornado
+
+  * python-dateutil
 
 * basemap (a matplotlib toolkit for plotting maps and map projections)
 
