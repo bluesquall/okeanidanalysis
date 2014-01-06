@@ -168,7 +168,7 @@ class Map(Basemap):
         if contour:
             raise NotImplementedError # TODO: fill this in
         if quiver:
-            qargs = [x,y,u,v]
+            qargs = [x,y,u,v] # NOTE: implies u East and v North
             if quiver == 'arrowcolor':
                 qargs.append(m)
                 kwargs.update(clim = [0, max_current]) 
