@@ -10,6 +10,10 @@ Can be run from command line, e.g.:
 
     python nav-tracks-in-monterey-bay.py /mbari/LRAUV/tethys/missionlogs/2013/20131219_20131220/20131219T204936/201312192049_201312202001.mat +rr
 
+TODO: 
+    * Add a NaN in when there is a gap larger than 1 minute, so that you can
+      see breaks in plotted lines.
+
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,6 +29,8 @@ def main(verbose=0, resolution='l', r=None, g=None,
     if verbose > 0: print 'Using Basemap to generate a map of Monterey Bay'    
     if r: resolution = bmres[r]
 
+    fig = plt.figure(figsize=(10,7.5))
+    ax = fig.add_axes((0.05,0.05,0.9,0.9))
     m = oa.maps.MontereyBay(resolution=resolution, **kwargs)
     m.drawdefault()
     if g: m.drawgrid()
