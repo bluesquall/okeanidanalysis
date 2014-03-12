@@ -156,34 +156,23 @@ class OkeanidLog(h5py.File):
         return lon, lat, dep
 
 
-    def map_trajectory(self, mapobject, *a, **kw):
-        raise DeprecationWarning("use map_track instead")
+    def map_track(self, mapobject, component='', *a, **kw):
+        latvar = '/'.join((component,'latitude'))
+        lonvar = '/'.join((component,'longitude'))
+        start_stop_marker = kw.pop('start_stop_marker', False)
         try:
             timeslice = kw.pop('timeslice')
-            lats, t = self.timeseries('latitude', timeslice=timeslice)
-            lons, t = self.timeseries('longitude', timeslice=timeslice)
+            lats, t = self.timeseries(latvar, timeslice=timeslice)
+            lons, t = self.timeseries(lonvar, timeslice=timeslice)
         except KeyError:
-            lats = self['latitude/value'][:]
-            lons = self['longitude/value'][:]
-        # remove NaNs, since some Proj & basemap tools have trouble w/ them
-        junk, lats, lons = oalib.rmnans(lats + lons, lats, lons)
-        if self.units('latitude') is 'radian':
-            lats, lons = np.rad2deg(lats), np.rad2deg(lons)
-        x, y = mapobject(lons, lats)
-        mapobject.plot(x, y, *a, **kw)
-
-
-    def map_track(self, mapobject, *a, **kw):
-        try:
-            timeslice = kw.pop('timeslice')
-            lats, t = self.timeseries('latitude', timeslice=timeslice)
-            lons, t = self.timeseries('longitude', timeslice=timeslice)
-        except KeyError:
-            lats = self['latitude/value'][:]
-            lons = self['longitude/value'][:]
-        if self.units('latitude') is 'radian':
+            lats = self['/'.join((latvar,'value'))][:]
+            lons = self['/'.join((lonvar,'value'))][:]
+        if self.units(latvar) is 'radian':
             lats, lons = np.rad2deg(lats), np.rad2deg(lons)
         mapobject.draw_track(lats, lons, *a, **kw)
+        if start_stop_marker is True: # TODO: accept input marker shapes
+            mapobject.plot(lons[0], lats[0], 'go', latlon=True)
+            mapobject.plot(lons[-1], lats[-1], 'r8', latlon=True)
 
 
     def meters_trajectory(self, projection):
@@ -274,7 +263,8 @@ class OkeanidLog(h5py.File):
         """
         #TODO more general multi-axis layout...
         figwidth = 13 # in inches...
-        figsize = (figwidth, figwidth/oalib.golden_ratio)
+        #figsize = (figwidth, figwidth/oalib.golden_ratio)
+        figsize = (9, 6.5) # good for letter paper
         fig = plt.figure(figsize=figsize,)
         axkw = dict(frameon = True)
         left, width = 0.075, 0.6
@@ -407,6 +397,8 @@ class OkeanidLog(h5py.File):
             plt.setp(ax.get_xticklabels(), visible=False)
 
         depth_ax.set_title(os.path.basename(self.filename))
+#        control_mode_ax.xaxis.set_major_formatter(mpl.dates.DateFormatter('%Y-%m-%d %H:%M'))
+#        fig.autofmt_xdate()
 
 # TODO decide whether I really want the extra classes below
 #class VehicleLog(OkeanidLog):
