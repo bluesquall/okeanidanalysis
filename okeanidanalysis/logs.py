@@ -281,12 +281,10 @@ class OkeanidLog(h5py.File):
         # TODO do this again now that middle labels are removed
 
         self.plot_timeseries('depth', '-', axes=depth_ax)
-        self.plot_timeseries('platform_pitch_angle', convert=np.rad2deg, 
-                axes=pitch_ax)
+        self.plot_timeseries('platform_pitch_angle', axes=pitch_ax)
         self.plot_timeseries('platform_mass_position', axes=mass_ax)
         self.plot_timeseries('platform_buoyancy_position', axes=buoyancy_ax)
-        self.plot_timeseries('platform_elevator_angle', 
-                convert=np.rad2deg, axes=control_surface_ax)
+        self.plot_timeseries('platform_elevator_angle', axes=control_surface_ax)
         # TODO  Include another panel with VerticalControl mode (iff present)
 
         # TODO only if engineering data is requested...
