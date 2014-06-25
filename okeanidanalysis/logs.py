@@ -85,8 +85,11 @@ class OkeanidLog(h5py.File):
                 etc.
 
         """
-        v = self[x.replace('.','/')]['value'][:].ravel()
-        # TODO it seems like the replace statement above is not getting evaluated
+        # TODO it seems like the replace statement below is not getting evaluated
+        try: v = self[x.replace('.','/')]['value'][:].ravel()
+        except Exception, e:
+            print x
+            raise e
         if convert: 
             v = convert(v)
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
@@ -156,9 +159,13 @@ class OkeanidLog(h5py.File):
         return lon, lat, dep
 
 
-    def map_track(self, mapobject, component='', *a, **kw):
-        latvar = '/'.join((component,'latitude'))
-        lonvar = '/'.join((component,'longitude'))
+    def map_track(self, mapobject, component=None, *a, **kw):
+        if component is None or component.lower() == 'universal':
+            latvar = 'latitude'
+            lonvar = 'longitude'
+        else:
+            latvar = '/'.join((component,'latitude'))
+            lonvar = '/'.join((component,'longitude'))
         start_stop_marker = kw.pop('start_stop_marker', False)
         try:
             timeslice = kw.pop('timeslice')
@@ -342,7 +349,7 @@ class OkeanidLog(h5py.File):
         for k, v in buoyancy_engineering.iteritems():
             try: 
                 self.plot_timeseries(k, v,
-                        convert=oalib.make_multiplier(-10), 
+#                        convert=oalib.make_multiplier(-10), 
                         axes=buoyancy_ax)
             except: print 'no', k
         ### add to control surface axes ###
