@@ -22,7 +22,7 @@ Dependencies
 ------------
 The python package requirements are listed in a `pip`-compatible requirements file: `requirements.txt`.
 
-The major requirements can be installed using the standard approach for your OS, or using `pip`. I personally prefer `pip` because it gives more flexible control over python packages, and even allows you to install a sopecific revision directly from a version control system.
+The major requirements can be installed using the standard approach for your OS, or using `pip`. I personally prefer `pip` because it gives more flexible control over python packages, and even allows you to install a specific revision directly from a version control system.
 
 You will need:
 
@@ -45,6 +45,14 @@ You will need:
 * basemap (a matplotlib toolkit for plotting maps and map projections)
 
 * h5py
+
+* lxml
+
+  * libxml2-dev 
+  
+  * libxslt1-dev
+
+* pykml
 
 * argparse (for some of the example scripts)
 
@@ -81,17 +89,31 @@ I believe the basemap distribution includes a copy of libgeos, just in case, but
 
 * geos
 
+#### pykml and lxml
+
+Before installing lxml in ubuntu, you will need to install:
+
+  * libxml2-dev 
+  
+  * libxslt1-dev
+
+Afterward, you can install `lxml` and `pykml` via `pip`.
+
 ### Table of non-python dependencies and suggested packages:
 **TODO** make this for Ubuntu 12.04 and CentOS 6, at least.
 
 example shell script for pip install
 ------------------------------------
+For Ubuntu 12.04:
 ```Shell
+sudo apt-get install libpng12-dev libfreetype6-dev libxml2-dev libxslt1-dev
 sudo pip install numpy
 sudo pip install scipy
+sudo pip install pyparsing tornado python-dateutil
 sudo pip install matplotlib
 sudo pip install h5py
 sudo pip install ipython
 sudo pip install pyproj
 sudo pip install https://github.com/matplotlib/basemap/archive/v1.0.6rel.tar.gz#egg=basemap
+sudo pip install lxml pykml
 ```
