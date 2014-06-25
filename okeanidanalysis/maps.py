@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
+import pykml, pykml.parser
+from cStringIO import StringIO
 
 from okeanidanalysis import lib
 
@@ -129,6 +131,45 @@ class Map(Basemap):
         x, y = self(lon, lat) # convert to map plotting coordinates
         self.plot(x, y, *a, **kw)
 #TODO a track that changes color based on an ancillary variable
+
+    
+    def draw_kml(self, kml, fromstring=False, *a, **kw ):
+        """Draw a position track from a kml file output by LRAUV unserialize.
+
+        Parameters
+        ----------
+        kml : string or file object 
+            File to read the KML from.
+
+        Returns
+        -------
+        track : (matplotlib line)
+
+        TODO Add optional kwargs to perform conversions on lat/lon?
+
+        Any additional args or kwargs are passed to self.plot
+        """
+        if fromstring is False: 
+            root = pykml.parser.parse(kml).getroot()
+        else: 
+            root = pykml.parser.fromstring(kml)
+        for pm in root.Document.Placemark:
+            if pm.name == 'start':
+                slon, slat = pm.Point.coordinates.text.strip().split(',')
+                start_lon, start_lat = float(slon), float(slat)
+            elif pm.name == 'trajectory': 
+                coordstr = pm.LineString.coordinates.text.strip()
+                lon, lat = np.loadtxt(StringIO(coordstr), 
+                        delimiter=',', unpack=True)
+            elif pm.name == 'end': 
+                elon, elat = pm.Point.coordinates.text.strip().split(',')[:2]
+                end_lon, end_lat = float(elon), float(elat)
+        kw.update(dict(latlon=True))
+        track = self.plot(lon, lat, *a, **kw)
+        self.plot(start_lon, start_lat, 'go', latlon=True)
+        self.plot(end_lon, end_lat, 'r8', latlon=True)
+        return track
+
 
     def draw_currents(self, x, y, u, v, latlon=True,
             quiver=True, contour=None, contourf='magnitude', 
