@@ -42,6 +42,8 @@ You will need:
 
   * python-dateutil
 
+* pytz
+
 * basemap (a matplotlib toolkit for plotting maps and map projections)
 
 * h5py
@@ -83,6 +85,8 @@ You may not _need_ these, but you will probably _want_ them.
 
 Newer versions of `matplotlib` also include some use of `six` and `tornado` (follow up on that).
 
+Depending on the backend you plan to use, you may want to install a toolkit and its python bindings with the package manager for your distro. (PyQt4 doesn't install in quite the way `pip` expects, so `pip install PyQt4` won't work.)
+
 #### basemap
 
 I believe the basemap distribution includes a copy of libgeos, just in case, but you probably want to install the one for your system.
@@ -109,7 +113,7 @@ For Ubuntu 12.04:
 sudo apt-get install libpng12-dev libfreetype6-dev libxml2-dev libxslt1-dev
 sudo pip install numpy
 sudo pip install scipy
-sudo pip install pyparsing tornado python-dateutil
+sudo pip install pyparsing tornado python-dateutil pytz
 sudo pip install matplotlib
 sudo pip install h5py
 sudo pip install ipython
@@ -117,3 +121,12 @@ sudo pip install pyproj
 sudo pip install https://github.com/matplotlib/basemap/archive/v1.0.6rel.tar.gz#egg=basemap
 sudo pip install lxml pykml
 ```
+
+For Arch linux (2014-07-26):
+```Shell
+blas libpng freetype12 libxml2 libxslt hdf netcdf geos
+sudo pacman -S python2 python2-pip
+sudo pip2 install numpy scipy h5py netCDF4 pyparsing tornado six python-dateutil pytz lxml pykml matplotlib basemap ipython
+
+```
+
