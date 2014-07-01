@@ -16,6 +16,55 @@ import matplotlib.pyplot as plt
 
 import okeanidanalysis.lib as oalib
 
+
+def logpath(file_name, vehicle_name=None, logset=None, 
+        deployment=None, year=None, logtype='full', 
+        log_root=os.path.join('/','mbari','LRAUV'), verbosity=1 ):
+    """Return full path to an LRAUV log.
+
+    Parameters
+    ----------
+    file_name : str
+        The name of the unpacked log (e.g., 201405230522_201405231223.mat)
+    vehicle_name: str [None]
+        The name of the vehicle (e.g., Tethys)
+    logset : str [None]
+        The string identifying the actual set of logs (e.g., 20140523T052244)
+    deployment : str [None]
+        The identifier for the deployment (e.g., 20140522_20140528)
+    logtype : str ['full'], 'SBD', '3G', 'HotSpot'
+
+    log_root: str or path
+        Path to the root directory containing the logs for all the vehicles.
+
+    Returns
+    -------
+    log_path : str
+        Full path to the log.
+
+    """
+    logtypes = { 'full': 'missionlogs', 'missionlogs': 'missionlogs', 
+            'mission': 'missionlogs', 'shore': 'sbdlogs', 'sbd': 'sbdlogs', }
+
+    if year is None: 
+        year = int(file_name[:4]) 
+        # TODO: catch exceptions, handle science_ prefixes
+
+    if vehicle_name is not None:
+        branch = [vehicle_name]
+        try: 
+            branch.append(logtypes[logtype])
+            branch.append(str(year))
+        except KeyError: warnings.warn('Unknown log type' + logtype)
+        # TODO: handle months in sbdlogs directory paths
+        log_root = os.path.join(log_root, *branch)
+    if verbosity > 0: print('search starting at: {0}'.format(log_root))
+    
+    for root, dirs, files in os.walk(log_root):
+        if file_name in files:
+            return os.path.join(root, file_name)
+            
+
 # TODO provide alternate access to netCDF files through OkeanidNetCDF?
 
 class OkeanidLog(h5py.File):
@@ -163,6 +212,9 @@ class OkeanidLog(h5py.File):
         if component is None or component.lower() == 'universal':
             latvar = 'latitude'
             lonvar = 'longitude'
+        elif component.lower() == 'fix':
+            latvar = 'latitude_fix'
+            lonvar = 'longitude_fix'
         else:
             latvar = '/'.join((component,'latitude'))
             lonvar = '/'.join((component,'longitude'))
