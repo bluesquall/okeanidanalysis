@@ -124,7 +124,7 @@ sudo pip install lxml pykml
 
 For Arch linux (2014-07-26):
 ```Shell
-blas libpng freetype12 libxml2 libxslt hdf netcdf geos
+sudo pacman -S lapack blas libpng freetype2 libxml2 libxslt hdf netcdf geos
 sudo pacman -S python2 python2-pip
 sudo pip2 install numpy scipy h5py netCDF4 pyparsing tornado six python-dateutil pytz lxml pykml matplotlib basemap ipython
 
