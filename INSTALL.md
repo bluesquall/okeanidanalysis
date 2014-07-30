@@ -108,7 +108,7 @@ Afterward, you can install `lxml` and `pykml` via `pip`.
 
 example shell script for pip install
 ------------------------------------
-For Ubuntu 12.04:
+### For Ubuntu 12.04:
 ```Shell
 sudo apt-get install libpng12-dev libfreetype6-dev libxml2-dev libxslt1-dev
 sudo pip install numpy
@@ -122,11 +122,20 @@ sudo pip install https://github.com/matplotlib/basemap/archive/v1.0.6rel.tar.gz#
 sudo pip install lxml pykml
 ```
 
-For Arch linux (2014-07-26):
+### For Arch linux (2014-07-26):
+If you want to use one of the interactive backends for matplotlib, 
+make sure its dependencies are installed. Using Qt4 and the Qt4 
+backend, for example:
+```Shell
+sudo pacman -S qt4 
+```
+Then install the non-python dependencies for `scipy`, `matplotlib`, etc:
 ```Shell
 sudo pacman -S lapack blas libpng freetype2 libxml2 libxslt hdf netcdf geos
+```
+Finally, install `pip` and then `pip install` the python packages:
+```Shell
 sudo pacman -S python2 python2-pip
 sudo pip2 install numpy scipy h5py netCDF4 pyparsing tornado six python-dateutil pytz lxml pykml matplotlib basemap ipython
-
 ```
 
