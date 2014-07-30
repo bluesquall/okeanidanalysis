@@ -124,11 +124,16 @@ sudo pip install lxml pykml
 
 ### For Arch linux (2014-07-26):
 If you want to use one of the interactive backends for matplotlib, 
-make sure its dependencies are installed. Using Qt4 and the Qt4 
-backend, for example:
+it seems easiest to use your distro package manager right now. 
+To support both agg and cairo in GTK:
 ```Shell
-sudo pacman -S qt4 
+sudo pacman -S agg cairo pygtk python2-pyqt4
 ```
+
+If you want to use the Qt backend, you need to get PyQt running on your machine 
+(see [this post](http://bit.ly/1qLTtcz) for tips).
+**TODO** distill instructions into a recipe in this repository, and offer alternatives (GTK, wx, etc.)
+
 Then install the non-python dependencies for `scipy`, `matplotlib`, etc:
 ```Shell
 sudo pacman -S lapack blas libpng freetype2 libxml2 libxslt hdf netcdf geos
