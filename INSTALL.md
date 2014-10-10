@@ -5,17 +5,17 @@ It has been developed primarily using Python 2.7.3, but should mostly work with 
 Installing
 ----------
 If you already have the dependencies, you can install directly using `setuptools`:
-
+```Shell
 foo@bar okeanidanalysis$ sudo python setup.py install
-
-Personally, I prefer using `pip`:
-
-foo@bar ~$ sudo pip install -e ~/repos/okeanidanalysis
-
+```
+Personally, I prefer using [`pip`](http://pip.readthedocs.org) (and I recommend you consider a [`virtualenv`](http://virtualenv.readthedocs.org)):
+```Shell
+pip install -e ~/repos/okeanidanalysis
+```
 or:
-
-foo@bar ~$ sudo pip install git+git://github.com/bluesquall/okeanidanalysis.git#egg=okeanidanalysis
-
+```Shell
+pip install git+git://github.com/bluesquall/okeanidanalysis.git#egg=okeanidanalysis
+```
 **TODO** make sure the one above works on a test machine and the pip requirements file is found & used automatically.
 
 Dependencies
@@ -111,13 +111,7 @@ example shell script for pip install
 ### For Ubuntu 12.04:
 ```Shell
 sudo apt-get install libpng12-dev libfreetype6-dev libxml2-dev libxslt1-dev
-sudo pip install numpy
-sudo pip install scipy
-sudo pip install pyparsing tornado python-dateutil pytz
-sudo pip install matplotlib
-sudo pip install h5py
-sudo pip install ipython
-sudo pip install pyproj
+sudo pip install numpy scipy h5py netCDF4 pyproj pyparsing tornado python-dateutil pytz matplotlib ipython
 sudo pip install https://github.com/matplotlib/basemap/archive/v1.0.6rel.tar.gz#egg=basemap
 sudo pip install lxml pykml
 ```
