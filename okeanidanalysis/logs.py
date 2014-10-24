@@ -171,10 +171,11 @@ class OkeanidLog(h5py.File):
             ax = kw.pop('axes')
             ax.plot_date(t, v, *a, **kw)
             ax.set_xlim(ax.xaxis.get_data_interval()) # update time limits
-            return ax
         else: # just make a new axis
             plt.plot_date(t, v, *a, **kw)
-            return plt.gca()
+            ax = plt.gca()
+        plt.gcf().autofmt_xdate()
+        return ax
 
 
     def interpolate_timeseries(self, x, t, **kw):
