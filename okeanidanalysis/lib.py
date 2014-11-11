@@ -45,7 +45,9 @@ def matlab_datenum_to_python_datetime(dn):
     day = (datetime.datetime.fromordinal(int(n)) for n in dn)
     frac = (datetime.timedelta(days=n%1) for n in dn)
     shift = datetime.timedelta(days = 366)                                       
-    return [d + f - shift for d, f in itertools.izip(day, frac)] 
+    return [d.replace(tzinfo=pytz.UTC) + f - shift
+            for d, f in itertools.izip(day, frac)]
+# TODO: consider explicitly returning an array if the input was an array 
 
 
 def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
