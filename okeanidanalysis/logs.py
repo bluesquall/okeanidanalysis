@@ -135,13 +135,13 @@ class OkeanidLog(h5py.File):
 
         """
         # TODO it seems like the replace statement below is not getting evaluated
-        try: v = self[x.replace('.','/')]['value'][:].ravel()
+        try: v = self[x.replace('.','/')]['value'][:].squeeze()
         except Exception, e:
             print x
             raise e
         if convert: 
             v = convert(v)
-        t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].ravel())
+        t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].squeeze())
         if return_epoch: # XXX does this if really slow things down?
             t = oalib.python_datetime_to_unix_epoch(t)
         t = np.array(t)
