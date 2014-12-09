@@ -35,7 +35,7 @@ def utime(t, convention=None):
 def python_datetime_to_unix_epoch(dto):
     if type(dto) not in (list, np.ndarray): dto = [dto] # TODO is there a more elegant way?
     try:                                                                        
-        return [(dt - UNIX_EPOCH).total_seconds for dt in dto]
+        return [(dt - UNIX_EPOCH).total_seconds() for dt in dto]
     except TypeError: # can't subtract offset-naive and offset-aware datetimes
         dto = (pytz.UTC.localize(dt) for dt in dto)
         return [(dt - UNIX_EPOCH).total_seconds() for dt in dto]  
