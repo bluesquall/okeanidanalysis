@@ -55,6 +55,10 @@ def logpath(file_name, vehicle_name=None, logset=None,
         try: 
             branch.append(logtypes[logtype])
             branch.append(str(year))
+            if deployment is not None:
+                branch.append(deployment)
+                if logset is not None:
+                    branch.append(logset)
         except KeyError: warnings.warn('Unknown log type' + logtype)
         # TODO: handle months in sbdlogs directory paths
         log_root = os.path.join(log_root, *branch)
