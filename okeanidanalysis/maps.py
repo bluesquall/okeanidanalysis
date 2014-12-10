@@ -10,8 +10,11 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-import pykml, pykml.parser
-from cStringIO import StringIO
+try:
+    import pykml.parser
+except ImportError:
+    print('Could not import pykml.parser, will not support KML plotting.')
+from io import StringIO
 
 from okeanidanalysis import lib
 
@@ -20,21 +23,11 @@ class Map(Basemap):
 
     """
     def arangelat(self, dlat=1.):
-        try: 
-            parallels = np.arange(self.llcrnrlat, self.urcrnrlat, dlat)
-        except Exception, e: 
-            # corner attributes dne, probably initialized some other way...
-            raise e;
-        return parallels
+       	return np.arange(self.llcrnrlat, self.urcrnrlat, dlat)
  
 
     def arangelon(self, dlon=1.):
-        try: 
-            meridians = np.arange(self.llcrnrlon, self.urcrnrlon, dlon)
-        except Exception, e: 
-            # corner attributes dne, probably initialized some other way...
-            raise e;
-        return meridians
+        return np.arange(self.llcrnrlon, self.urcrnrlon, dlon)
         
        
     def drawparallels(self, circles=None, dlat=1., 
@@ -149,10 +142,13 @@ class Map(Basemap):
 
         Any additional args or kwargs are passed to self.plot
         """
-        if fromstring is False: 
-            root = pykml.parser.parse(kml).getroot()
-        else: 
-            root = pykml.parser.fromstring(kml)
+        try:
+            if fromstring is False: 
+                root = pykml.parser.parse(kml).getroot()
+            else: 
+                root = pykml.parser.fromstring(kml)
+        except:
+            raise NotImplementedError('KML plotting is only supported through pykml.')
         for pm in root.Document.Placemark:
             if pm.name == 'start':
                 slon, slat = pm.Point.coordinates.text.strip().split(',')

@@ -5,6 +5,6 @@ setup(name='okeanidanalysis',
       description='Tools and examples for working with MBARI LRAUV data.',
       author='M J Stanway',
       author_email='mjstanway@mbari.org',
-      url='',
+      url='https://github.com/bluesquall/okeanidanalysis',
       packages=['okeanidanalysis'],
      )

@@ -83,26 +83,23 @@ class OkeanidLog(h5py.File):
     def print_tree(self, root='/', verbosity=0): 
         for k0, i0 in self[root].items():
             if isinstance(i0, h5py.Dataset) and verbosity > 0:
-                print 'found level 0 dataset', k0
+                print ('found level 0 dataset {0}'.format(k0))
                 # TODO collect the dataset size
             elif isinstance(i0, h5py.Group):
-                print 'found level 0 group', k0
+                print('found level 0 group {0}'.format(k0))
                 # ... continue into the group -- there should be a smart war
                 # to do this without rewriting a lot of code...
                 for k1, i1 in i0.items():
                     if isinstance(i1, h5py.Dataset) and verbosity > 0:
-                        print '\tfound level 1 dataset', k1
+                        print('\tfound level 1 dataset {0}'.format(k1))
                         # TODO collect the dataset size
                     elif isinstance(i1,h5py.Group):
-                        print '\tfound subgroup', k1
+                        print('\tfound subgroup {0}'.format(k1))
                         for k2, i2 in i1.items():
                             if isinstance(i2, h5py.Dataset) and verbosity>0:
-                                print '\t\tfound level 2 dataset', k2
+                                print('\t\tfound level 2 dataset {0}'.format(k2))
                             elif isinstance(i2, h5py.Group):
-                                print '\t\tfound subsubgroub', k2
-#                            else: print 'found unknown', k2
-#                        else: print 'found unknown', k1
-#                    else: print 'found unknown', k0
+                                print('\t\tfound subsubgroub'.format(k2))
 
 
     def grep_tree(self, pattern):
@@ -140,9 +137,9 @@ class OkeanidLog(h5py.File):
         """
         # TODO it seems like the replace statement below is not getting evaluated
         try: v = self[x.replace('.','/')]['value'][:].squeeze()
-        except Exception, e:
-            print x
-            raise e
+        except Exception:
+            print('could not read value for {0}'.format(x))
+#            raise e
         if convert: 
             v = convert(v)
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].squeeze())
@@ -150,11 +147,8 @@ class OkeanidLog(h5py.File):
             t = oalib.python_datetime_to_unix_epoch(t)
         t = np.array(t)
         if timeslice:
-            try:
-                v = v[np.logical_and(t > timeslice[0], t < timeslice[1])]
-                t = t[np.logical_and(t > timeslice[0], t < timeslice[1])]
-            except Exception, e: 
-                raise e # TODO catch common exceptions
+            v = v[np.logical_and(t > timeslice[0], t < timeslice[1])]
+            t = t[np.logical_and(t > timeslice[0], t < timeslice[1])]
         if rmnans:
             v, t = oalib.rmnans(v, t)
         if return_list:
@@ -190,6 +184,8 @@ class OkeanidLog(h5py.File):
             with a small (e.g., 1e-6) smoothing factor...                       
  
         """
+        if type(t[0]) is datetime.datetime: t = oalib.python_datetime_to_unix_epoch(t)
+        elif type(t[0]) is not float: print('time argument must be datetime or float epoch seconds') # TODO exception
         v, t_v = self.timeseries(x, rmnans=True, return_epoch=True) # r_e faster??
         interpolant = sp.interpolate.interp1d(t_v, v, **kw)
         try: # assume time array is Unix epoch float seconds
@@ -199,9 +195,6 @@ class OkeanidLog(h5py.File):
             interpolant = sp.interpolate.interp1d(t_v, v, **kw)
             return interpolant(t)
             # TODO clean up
-        except Exception, e: # fill in exceptions, like datetime arg
-            raise e
-            # return interpolant(oalib.python_datetime_to_unix_epoch(t))
 
 
     def interpolate_trajectory(self, t, return_degrees=True, **kw):
@@ -277,7 +270,6 @@ class OkeanidLog(h5py.File):
         if self.units('latitude') is 'radian': radflag = True
         else: radflag = False
         easting, northing = projection(lon, lat, radians=radflag)
-#        print northing.shape, easting.shape, dep.shape
         return np.vstack((northing, easting, dep))
 # TODO include an interpolation for trajectory in meters as well
 
@@ -317,7 +309,6 @@ class OkeanidLog(h5py.File):
     def plot_difference_timeseries(self, x, y, *a, **kw):
         t, ix, iy = self.comparison_timeseries(x, y)
         t = np.array([datetime.datetime.utcfromtimestamp(e) for e in t])
-        print t.shape, ix.shape, iy.shape
         if 'axes' in kw: # deal with possible bug in plot_date?
             ax = kw.pop('axes')
             ax.plot_date(t, ix - iy, *a, **kw)
@@ -380,7 +371,7 @@ class OkeanidLog(h5py.File):
                 'Depth_MSI_US300/depth': 'm-'}
         for k, v in depth_science.iteritems():
             try: self.plot_timeseries(k, v, axes=depth_ax)
-            except: print 'no', k
+            except: print('no {0}'.format(k))
 
         depth_engineering = {
                 'VerticalControl/smoothDepthInternal': 'r-',
@@ -388,7 +379,7 @@ class OkeanidLog(h5py.File):
                 'VerticalControl/depthErrorInternal': 'g:'}
         for k, v in depth_engineering.iteritems():
             try: self.plot_timeseries(k, v, axes=depth_ax)
-            except: print 'no', k
+            except: print('no {0}'.format(k))
         # TODO only if sw debug flag is set 
         depth_rate_engineering = {
                 'VerticalControl/depthRateCmd': 'gray',
@@ -398,7 +389,7 @@ class OkeanidLog(h5py.File):
             try: 
                 self.plot_timeseries(k, vi, axes=depth_ax, 
                         convert=oalib.make_multiplier(100))
-            except: print 'no', k
+            except: print('no {0}'.format(k))
         ### add to pitch axes ###
         pitch_engineering = {
                 'AHRS_sp3003D/platform_pitch_angle': 'k-', 
@@ -408,7 +399,7 @@ class OkeanidLog(h5py.File):
                 }
         for k, v in pitch_engineering.iteritems():
             try: self.plot_timeseries(k, v, axes=pitch_ax)
-            except: print 'no', k
+            except: print('no {0}'.format(k))
         ### add to mass axes ###
         mass_engineering = {
                 'VerticalControl/massPositionAction': 'g-', 
@@ -418,7 +409,7 @@ class OkeanidLog(h5py.File):
                 }
         for k, v in mass_engineering.iteritems():
             try: self.plot_timeseries(k, v, axes=mass_ax)
-            except: print 'no', k
+            except: print('no {0}'.format(k))
         ### add to buoyancy axes ###
         buoyancy_engineering = {
                 'VerticalControl/buoyancyAction': 'm-',
@@ -429,7 +420,7 @@ class OkeanidLog(h5py.File):
                 self.plot_timeseries(k, v,
 #                        convert=oalib.make_multiplier(-10), 
                         axes=buoyancy_ax)
-            except: print 'no', k
+            except: print('no {0}'.format(k))
         ### add to control surface axes ###
         control_surface_engineering = {
                 'VerticalControl/elevatorAngleAction': 'm-', 
@@ -440,15 +431,15 @@ class OkeanidLog(h5py.File):
             try: 
                 self.plot_timeseries(k, v, convert = np.rad2deg, 
                    axes=control_surface_ax)
-            except: print 'no', k
+            except: print('no {0}'.format(k))
  
 
         # TODO only if supporting data is requested
         ### add other supporting data ###
         try: self.plot_timeseries('CTD_NeilBrown/depth', 'k-', axes=depth_ax)
-        except: print 'no CTD_NeilBrown/depth'
+        except: print('no CTD_NeilBrown/depth')
         try: self.plot_timeseries('Depth_MSI_US300', 'm-', axes=depth_ax)
-        except: print 'no Depth_MSI_US300'
+        except: print('no Depth_MSI_US300')
 
 
         ### print additional information ###
@@ -456,17 +447,16 @@ class OkeanidLog(h5py.File):
                 'Config/Servo/buoyancyNeutral')
         for s in buoyancyNeutral:
             try:
-                print s, '=', self[s+'/value'], self[s+'/units']
+                print('{0} = {1} {2}'.format(s, self[s+'/value'], self[s+'/units']))
             except:
-                print s, 'not found'
+                print('{0} not found'.format(s))
         
 #       VertMd(0=N/A,1=Surf,2=Dep,3=DepRt,4=Pit0,5=Pit,6=PitRt,7=M&E,8=Flt),
 #       VertHoldMd(0=N/A,1=Ms,2=El,3=Both)
         try:
             v, t = self.timeseries('VerticalControl/verticalMode')
             oalib.plot_date_blocks(t, v, axes=control_mode_ax, colormap=mpl.cm.jet)
-        except: 
-            print 'VerticalControl/verticalMode', 'not found'
+        except: print('VerticalControl/verticalMode not found')
 
         depth_ax.invert_yaxis()
         for ax in fig.get_axes():
@@ -475,7 +465,7 @@ class OkeanidLog(h5py.File):
                 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),
                         fontsize='small')
             except:
-                print 'uncaught exception for legend...'
+                print('uncaught exception for legend...')
         for ax in fig.get_axes()[:-1]:
             plt.setp(ax.get_xticklabels(), visible=False)
 

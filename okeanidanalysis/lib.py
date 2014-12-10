@@ -52,7 +52,7 @@ def matlab_datenum_to_python_datetime(dn):
 
 def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
     """Update a dictionary with another, skipping specified keys."""
-    if l.has_key('kwargs') : kwargs.update(l['kwargs'])
+    if 'kwargs' in l: kwargs.update(l['kwargs'])
     kwargs.update(dict((k, v) for k, v in l.items() if k not in skip))
     return kwargs
 
@@ -111,7 +111,6 @@ def plot_date_blocks(t, v, axes, colormap=None, unit_height=False, **kw):
     left = np.hstack((t[0],t[d.nonzero()]))
     right = np.hstack((t[d.nonzero()],mpl.dates.num2date(axes.get_xlim()[-1])))
     height = np.hstack((v[d.nonzero()], v[-1]))
-    print height
     norm_height = height / np.float(np.max(height))
     for l, r, h, nh  in itertools.izip(left, right, height, norm_height):
         # draw a rectangle with the appropriate color
@@ -124,7 +123,6 @@ def plot_date_blocks(t, v, axes, colormap=None, unit_height=False, **kw):
         axes.add_patch(mpl.patches.Rectangle(ll, w, h, **kw))
     pt = np.vstack((left, right))
     pv = np.vstack((height, height))
-    print pt.shape, pv.shape
     axes.plot_date(pt.ravel('F'), pv.ravel('F'), 'k-')
 
 # TODO modify to use PatchCollection and set colors that way

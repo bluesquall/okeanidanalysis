@@ -1,7 +1,6 @@
 ## common library
-import lib
+from . import lib
 ## data reader
-import logs
+from . import logs
 ## common types of plots
-# import timeseries
-import maps
+from . import maps
