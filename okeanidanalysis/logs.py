@@ -6,7 +6,6 @@ okeanidanalysis.logs
 
 import os
 import datetime
-import itertools
 
 import numpy as np
 import scipy as sp
@@ -369,7 +368,7 @@ class OkeanidLog(h5py.File):
                 'Depth_Keller/depth': 'c-',
                 'CTD_NeilBrown/depth': 'k-',
                 'Depth_MSI_US300/depth': 'm-'}
-        for k, v in depth_science.iteritems():
+        for k, v in depth_science.items():
             try: self.plot_timeseries(k, v, axes=depth_ax)
             except: print('no {0}'.format(k))
 
@@ -377,7 +376,7 @@ class OkeanidLog(h5py.File):
                 'VerticalControl/smoothDepthInternal': 'r-',
                 'VerticalControl/depthCmd': 'g-',
                 'VerticalControl/depthErrorInternal': 'g:'}
-        for k, v in depth_engineering.iteritems():
+        for k, v in depth_engineering.items():
             try: self.plot_timeseries(k, v, axes=depth_ax)
             except: print('no {0}'.format(k))
         # TODO only if sw debug flag is set 
@@ -385,7 +384,7 @@ class OkeanidLog(h5py.File):
                 'VerticalControl/depthRateCmd': 'gray',
                 'VerticalControl/depth_rate': 'gray', # XXX why same color?
                 }
-        for k, v in depth_rate_engineering.iteritems():
+        for k, v in depth_rate_engineering.items():
             try: 
                 self.plot_timeseries(k, vi, axes=depth_ax, 
                         convert=oalib.make_multiplier(100))
@@ -397,7 +396,7 @@ class OkeanidLog(h5py.File):
                 'AHRS_3DMGX3/platform_pitch_angle': 'c-',
                 'InternalSim/platform_pitch_angle': ':r',
                 }
-        for k, v in pitch_engineering.iteritems():
+        for k, v in pitch_engineering.items():
             try: self.plot_timeseries(k, v, axes=pitch_ax)
             except: print('no {0}'.format(k))
         ### add to mass axes ###
@@ -407,7 +406,7 @@ class OkeanidLog(h5py.File):
                 'MassServo/platform_mass_position': 'r-',
                 #'VerticalControl/massPitchErrorInternal': ':r',
                 }
-        for k, v in mass_engineering.iteritems():
+        for k, v in mass_engineering.items():
             try: self.plot_timeseries(k, v, axes=mass_ax)
             except: print('no {0}'.format(k))
         ### add to buoyancy axes ###
@@ -415,7 +414,7 @@ class OkeanidLog(h5py.File):
                 'VerticalControl/buoyancyAction': 'm-',
                 'BuoyancyServo/platform_buoyancy_position': 'b-',
                 }
-        for k, v in buoyancy_engineering.iteritems():
+        for k, v in buoyancy_engineering.items():
             try: 
                 self.plot_timeseries(k, v,
 #                        convert=oalib.make_multiplier(-10), 
@@ -427,7 +426,7 @@ class OkeanidLog(h5py.File):
                 'VerticalControl/elevatorIntegralInternal': 'm:',
                 'ElevatorServo/platform_elevator_angle': 'c-',
                 }
-        for k, v in control_surface_engineering.iteritems():
+        for k, v in control_surface_engineering.items():
             try: 
                 self.plot_timeseries(k, v, convert = np.rad2deg, 
                    axes=control_surface_ax)

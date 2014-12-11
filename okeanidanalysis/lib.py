@@ -6,7 +6,7 @@ Generally useful methods that span across submodules.
 
 """
 
-import time, datetime, pytz, itertools
+import time, datetime, pytz
 import numpy as np
 import scipy as sp
 import scipy.interpolate
@@ -45,8 +45,7 @@ def matlab_datenum_to_python_datetime(dn):
     day = (datetime.datetime.fromordinal(int(n)) for n in dn)
     frac = (datetime.timedelta(days=n%1) for n in dn)
     shift = datetime.timedelta(days = 366)                                       
-    return [d.replace(tzinfo=pytz.UTC) + f - shift
-            for d, f in itertools.izip(day, frac)]
+    return [d.replace(tzinfo=pytz.UTC) + f - shift for d, f in zip(day, frac)]
 # TODO: consider explicitly returning an array if the input was an array 
 
 
