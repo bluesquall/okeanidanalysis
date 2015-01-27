@@ -327,7 +327,7 @@ class OkeanidLog(h5py.File):
         else: return s, ix, iy
 
 
-    def vplane(self, ):
+    def vplane(self, fig=None):
         """Plot control variables in vertical plane for review.
 
         Originally patterned after vplaneLR.m, by Rob McEwen.
@@ -337,10 +337,9 @@ class OkeanidLog(h5py.File):
 
         """
         #TODO more general multi-axis layout...
-        figwidth = 13 # in inches...
-        #figsize = (figwidth, figwidth/oalib.golden_ratio)
         figsize = (9, 6.5) # good for letter paper
-        fig = plt.figure(figsize=figsize,)
+        if fig is None: fig = plt.figure(figsize=figsize)
+        else: fig.set_size_inches(*figsize)
         axkw = dict(frameon = True)
         left, width = 0.075, 0.6
         bh = 0.11
