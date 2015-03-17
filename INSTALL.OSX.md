@@ -43,8 +43,8 @@ Making a venv and activating it
 -------------------------------
 
 ```shell
-pyvenv ~/Virtualenvs/oa
-source ~/Virtualenvs/oa/bin/activate
+pyvenv ~/venvs/oa
+source ~/venvs/oa/bin/activate
 ```
 
 Note that you will need to activate your venv any time you open a new terminal
@@ -82,7 +82,7 @@ Checking the installation
 -------------------------
 
 ```shell
-source ~/Virtualenvs/oa/bin/activate
+source ~/venvs/oa/bin/activate
 ipython --pylab -i -c "import okeanidanalysis;mbm = okeanidanalysis.maps.MontereyBay(resolution='h');mbm.drawdefault()"
 ```
 
