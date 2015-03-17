@@ -1,14 +1,14 @@
-The `okeanidanalysis` package is a `python` package to help you plot and analyze data from a long-range AUV.
+The `okeanidanalysis` package is a `python` package to help you plot and
+analyze data from a long-range AUV.
 
-It has been developed primarily using Python 2.7.3, but should mostly work with other versions.
+It is being developed and tested to work with Python 3.4.2, but should mostly
+work with other recent versions.
 
 Installing
 ----------
-If you already have the dependencies, you can install directly using `setuptools`:
-```Shell
-foo@bar okeanidanalysis$ sudo python setup.py install
-```
-Personally, I prefer using [`pip`](http://pip.readthedocs.org) (and I recommend you consider a [`virtualenv`](http://virtualenv.readthedocs.org)):
+If you already have the dependencies, you should install using
+[`pip`](http://pip.readthedocs.org), and I recommend you consider a
+[`virtual environment`](https://docs.python.org/3/library/venv.html).
 ```Shell
 pip install -e ~/repos/okeanidanalysis
 ```
@@ -20,9 +20,13 @@ pip install git+git://github.com/bluesquall/okeanidanalysis.git#egg=okeanidanaly
 
 Dependencies
 ------------
-The python package requirements are listed in a `pip`-compatible requirements file: `requirements.txt`.
+The python package requirements are listed in a `pip`-compatible requirements
+file: `requirements.txt`.
 
-The major requirements can be installed using the standard approach for your OS, or using `pip`. I personally prefer `pip` because it gives more flexible control over python packages, and even allows you to install a specific revision directly from a version control system.
+The major requirements can be installed using the standard approach for your
+operating system. For the `python` dependencies, we recommend using `pip`
+because it gives more flexible control over python packages, and also allows
+you to install a specific revision directly from a version control system.
 
 You will need:
 
@@ -31,9 +35,9 @@ You will need:
 * scipy
 
 * matplotlib
-  
+
   * libpng
-  
+
   * libfreetype
 
   * pyparsing
@@ -50,22 +54,29 @@ You will need:
 
 * lxml
 
-  * libxml2-dev 
-  
+  * libxml2-dev
+
   * libxslt1-dev
 
 * pykml
 
 * argparse (for some of the example scripts)
 
-You may also want to consider using `pip` and `virtualenv` to install appropriate versions of all the python dependencies locally without touching the system default versions. This approach is particularly useful when you are working on a machine where you don't have administrator privileges, or don't want to exercise those privileges.
+You should consider using `pip` and `venv` to install appropriate versions of
+all the python dependencies locally without touching the system default
+versions. This approach is particularly useful when you are working on a
+machine where you don't have administrator privileges, or don't want to
+exercise those privileges.
 
 ### Installing dependencies via `pip` or from source
 
-If you decide to install dependencies like `numpy`, `scipy`, and `matplotlib` from source (e.g., instead of using `apt-get` or `yum`), then you will need to have some other non-python packages installed.
+If you decide to install dependencies like `numpy`, `scipy`, and `matplotlib`
+from source (i.e., instead of using `apt-get`, `brew`, `pacman`, or `yum`),
+then you will need to have some other non-python packages installed.
 
 #### numpy
-I believe this should install just fine without any external dependencies, but it will use things like LAPACK if it finds them. (Come back to check on this.)
+I believe this should install just fine without any external dependencies, but
+it will use things like LAPACK if it finds them. (Come back to check on this.)
 
 #### scipy
 
@@ -83,13 +94,17 @@ You may not _need_ these, but you will probably _want_ them.
 
 * freetype
 
-Newer versions of `matplotlib` also include some use of `six` and `tornado` (follow up on that).
+Newer versions of `matplotlib` also include some use of `six` and `tornado`
+(follow up on that).
 
-Depending on the backend you plan to use, you may want to install a toolkit and its python bindings with the package manager for your distro. (PyQt4 doesn't install in quite the way `pip` expects, so `pip install PyQt4` won't work.)
+Depending on the backend you plan to use, you may want to install a toolkit and
+its python bindings with the package manager for your distro. (PyQt4 doesn't
+install in quite the way `pip` expects, so `pip install PyQt4` won't work.)
 
 #### basemap
 
-I believe the basemap distribution includes a copy of libgeos, just in case, but you probably want to install the one for your system.
+I believe the basemap distribution includes a copy of libgeos, just in case,
+but you probably want to install the one for your system.
 
 * geos
 
@@ -97,71 +112,14 @@ I believe the basemap distribution includes a copy of libgeos, just in case, but
 
 Before installing lxml in ubuntu, you will need to install:
 
-  * libxml2-dev 
-  
+  * libxml2-dev
+
   * libxslt1-dev
 
 Afterward, you can install `lxml` and `pykml` via `pip`.
 
-### Table of non-python dependencies and suggested packages:
-**TODO** make this for Ubuntu 12.04 and CentOS 6, at least.
 
-example shell script for pip install
-------------------------------------
-### For Ubuntu 12.04:
-```Shell
-sudo apt-get install libpng12-dev libfreetype6-dev libxml2-dev libxslt1-dev
-sudo pip install numpy scipy h5py netCDF4 pyproj pyparsing tornado python-dateutil pytz matplotlib ipython
-sudo pip install https://github.com/matplotlib/basemap/archive/v1.0.6rel.tar.gz#egg=basemap
-sudo pip install lxml pykml
-```
+Platform-specific installation instructions
+-------------------------------------------
 
-### For Arch linux (2014-07-26):
-If you want to use one of the interactive backends for matplotlib, 
-it seems easiest to use your distro package manager right now. 
-To support both agg and cairo in GTK:
-```Shell
-sudo pacman -S agg cairo pygtk python2-pyqt4
-```
-
-If you want to use the Qt backend, you need to get PyQt running on your machine 
-(see [this post](http://bit.ly/1qLTtcz) for tips).
-**TODO** distill instructions into a recipe in this repository, and offer alternatives (GTK, wx, etc.)
-
-Then install the non-python dependencies for `scipy`, `matplotlib`, etc:
-```Shell
-sudo pacman -S lapack blas libpng freetype2 libxml2 libxslt hdf netcdf geos
-```
-Finally, install `pip` and then `pip install` the python packages:
-```Shell
-sudo pacman -S python2 python2-pip
-sudo pip2 install numpy scipy h5py netCDF4 pyparsing tornado six python-dateutil pytz lxml pykml matplotlib basemap ipython
-```
-
-### For CentOS 6.5
-
-TODO: Check interactive backends
-
-In your python (2.7 or 3.x) virtualenv:
-```Shell 
-pip install -U numpy scipy  h5py netCDF4 python-dateutil six tornado pyparsing pytz lxml pykml matplotlib basemap ipython
-```
-
-The current (2014-10-10) version of freetype2 on CentOS 6.5 is 2.3.11, but matplotlib wants 2.4. According to [this StackOverflow post](http://stackoverflow.com/questions/25634689/installing-matplotlib-on-centos-6-5), matplotlib should be fine with freetype2-2.3.11, but your mileage may vary.
-
-If you want to use freetype 2.3:
-```Shell
-pip install -U numpy scipy  h5py netCDF4 python-dateutil six tornado pyparsing pytz
-pip install --download /tmp matplotlib
-cd /tmp && tar -xvf matplotlib-1.4.0.tar.gz
-vim matplotlib-1.4.0/setupext.py
-  :945
-  :s/2\.4/2\.3/
-  :wq
-tar -czvf matplotlib-1.4.0.tar.gz matplotlib-1.4.0
-pip install --verbose matplotlib-1.4.0.tar.gz
-pip install https://github.com/matplotlib/basemap/archive/v1.0.7rel.tar.gz#egg=basemap
-pip install ipython
-```
-
-TODO: Packages `lxml` and `pykml` currently won't install on the CentOS VMs we have. Fix this.
+Please refer to `INSTALL.<platform>.md` in the root directory of the repo.
