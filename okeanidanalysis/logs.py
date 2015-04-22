@@ -9,8 +9,10 @@ import datetime
 
 import numpy as np
 import scipy as sp
+import scipy.interpolate
 import h5py
 import matplotlib as mpl
+import matplotlib.dates
 import matplotlib.pyplot as plt
 
 import okeanidanalysis.lib as oalib
@@ -139,6 +141,8 @@ class OkeanidLog(h5py.File):
         except Exception:
             print('could not read value for {0}'.format(x))
 #            raise e
+#        if x.split('/')[-1] == 'platform_orientation':
+#            v[v < 0] += 2*np.pi
         if convert: 
             v = convert(v)
         t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].squeeze())
@@ -159,6 +163,9 @@ class OkeanidLog(h5py.File):
         """A convenience function for plotting time-series."""
         kw.update(return_epoch=False)
         v, t = self.timeseries(x, **kw)
+        utcoffset = kw.pop('utcoffset', None)
+        if utcoffset is not None: # temporary hack because plot_date seems to be ignoring tz kwarg...
+            t = matplotlib.dates.date2num(t) + utcoffset/24.
         for k in ('return_epoch', 'convert', 'timeslice', 'rmnans'): 
             trash = kw.pop(k, None)
         if not a: a = '-' # plot a line by default
@@ -174,6 +181,78 @@ class OkeanidLog(h5py.File):
         plt.gcf().autofmt_xdate()
         return ax
 
+
+    def scatter_time_section(self, x, s=4, marker='.', dt=None, **kw):
+        """Draw a time section as a scatterplot.
+
+        Parameters
+        ----------
+        x : str
+            The value to use for color (e.g., sea_water_temperature).
+        dt : float [None]
+            Number of seconds between dots in scatter plot.
+            This is intended to reconstruct data that has been decimated on the
+            vehicle using linearApprox. For full-resolution logs, use the
+            default value of `None` and there will be no interpolation.
+
+        Keyword arguments
+        -----------------
+        axes : matplotlib.axes.Axes
+            Existing set of axes to plot on (otherwise a new set is made).
+
+        Other keyword arguments are passed through to OkeanidLog.timeseries
+        and the matplotlib scatter function.
+
+        Returns
+        -------
+        pc : matplotlib.paths.PathCollection
+            The scatterplot points.
+        ax : matplotlib.axes.Axes
+            The axes plotted on.
+
+        """
+        kw.update(return_epoch=True)
+        edgecolors = kw.pop('edgecolors', 'none')
+        v, t = self.timeseries(x, **kw)
+        if dt is not None:
+            t = np.arange(t.min(), t.max(), dt)
+            v = self.interpolate_timeseries(x, t)
+        d = self.interpolate_timeseries('depth', t)
+        for k in ('return_epoch', 'convert', 'timeslice', 'rmnans'):
+            trash = kw.pop(k, None)
+        dn = mpl.dates.epoch2num(t)
+        if 'axes' in kw:
+            ax = kw.pop('axes')
+            pc = ax.scatter(dn, d, s, v, marker, edgecolors=edgecolors, **kw)
+        else:
+            pc = plt.scatter(dn, d, s, v, marker, edgecolors=edgecolors, **kw)
+            ax = plt.gca()
+        ax.invert_yaxis()
+        ax.xaxis_date()
+        plt.gcf().autofmt_xdate()
+        return pc, ax
+
+
+    def contourf_time_section(self, x, dt=60, dz=1, dv=None, **kw):
+        kw.update(return_epoch=False) # TODO: simplify when oalib uses matplotlib.dates
+        v, t = self.timeseries(x, rmnans=True, **kw)
+        z = self.interpolate_timeseries('depth', t)
+        z, v, t = oalib.rmnans(z, v, t)
+        t = matplotlib.dates.date2num(t)
+        zmin, zmax = np.floor(z.min()), np.ceil(z.max())
+        tmin, tmax = np.floor(t.min()), np.ceil(t.max())
+        tg, zg = np.mgrid[tmin:tmax:(dt/86400.0), zmin:zmax:dz]
+        pts = np.vstack((t, z)).T
+        vg = sp.interpolate.griddata(pts, v, (tg, zg), method='cubic')
+        if 'axes' in kw:
+            ax = kw.pop('axes')
+            cs = ax.contourf(tg, zg, vg, **kw)
+        else:
+            cs = plt.contourf(tg, zg, vg, **kw)
+            ax = plt.gca()
+        ax.invert_yaxis()
+        ax.xaxis_date()
+        return cs, ax
 
     def interpolate_timeseries(self, x, t, **kw):
         """Convenience wrapper for sp.interpolate.interp1d
