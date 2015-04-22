@@ -136,11 +136,10 @@ class OkeanidLog(h5py.File):
                 etc.
 
         """
-        # TODO it seems like the replace statement below is not getting evaluated
-        try: v = self[x.replace('.','/')]['value'][:].squeeze()
-        except Exception:
-            print('could not read value for {0}'.format(x))
-#            raise e
+        x = x.replace('.','/')
+        try: v = self[x]['value'][:].squeeze()
+        except KeyError:
+            raise KeyError('could not read value for {0}'.format(x))
 #        if x.split('/')[-1] == 'platform_orientation':
 #            v[v < 0] += 2*np.pi
         if convert: 
