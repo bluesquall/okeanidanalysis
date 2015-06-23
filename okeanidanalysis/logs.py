@@ -127,8 +127,7 @@ class OkeanidLog(h5py.File):
         return u
 
 
-    def timeseries(self, x, return_epoch=False, return_list=False, 
-            convert=None, timeslice=None, rmnans=False, **kw):
+    def timeseries(self, x, convert=None, rmnans=False, timeslice=None, **kw):
         """Extract simple timeseries.
         
         e.g.,   depth, t = slate.timeseries('depth')
@@ -144,28 +143,26 @@ class OkeanidLog(h5py.File):
 #            v[v < 0] += 2*np.pi
         if convert: 
             v = convert(v)
-        t = oalib.matlab_datenum_to_python_datetime(self[x]['time'][:].squeeze())
-        if return_epoch: # XXX does this if really slow things down?
-            t = oalib.python_datetime_to_unix_epoch(t)
-        t = np.array(t)
+        t = self[x]['time'][:].squeeze() - 366
         if timeslice:
+            if type(timeslice[0]) is datetime.datetime: 
+                timeslice[0] = matplotlib.dates.date2num(timeslice[0])
+            if type(timeslice[1]) is datetime.datetime: 
+                timeslice[1] = matplotlib.dates.date2num(timeslice[1])
             v = v[np.logical_and(t > timeslice[0], t < timeslice[1])]
             t = t[np.logical_and(t > timeslice[0], t < timeslice[1])]
         if rmnans:
             v, t = oalib.rmnans(v, t)
-        if return_list:
-            v, t = v.tolist(), t.tolist()
         return v, t
 
 
     def plot_timeseries(self, x, *a, **kw):
         """A convenience function for plotting time-series."""
-        kw.update(return_epoch=False)
         v, t = self.timeseries(x, **kw)
         utcoffset = kw.pop('utcoffset', None)
         if utcoffset is not None: # temporary hack because plot_date seems to be ignoring tz kwarg...
-            t = matplotlib.dates.date2num(t) + utcoffset/24.
-        for k in ('return_epoch', 'convert', 'timeslice', 'rmnans'): 
+            t += utcoffset/24.
+        for k in ('convert', 'timeslice', 'rmnans'): 
             trash = kw.pop(k, None)
         if not a: a = '-' # plot a line by default
         if 'label' not in kw: 
@@ -210,21 +207,19 @@ class OkeanidLog(h5py.File):
             The axes plotted on.
 
         """
-        kw.update(return_epoch=True)
         edgecolors = kw.pop('edgecolors', 'none')
         v, t = self.timeseries(x, **kw)
         if dt is not None:
             t = np.arange(t.min(), t.max(), dt)
             v = self.interpolate_timeseries(x, t)
         d = self.interpolate_timeseries('depth', t)
-        for k in ('return_epoch', 'convert', 'timeslice', 'rmnans'):
+        for k in ('convert', 'timeslice', 'rmnans'):
             trash = kw.pop(k, None)
-        dn = mpl.dates.epoch2num(t)
         if 'axes' in kw:
             ax = kw.pop('axes')
-            pc = ax.scatter(dn, d, s, v, marker, edgecolors=edgecolors, **kw)
+            pc = ax.scatter(t, d, s, v, marker, edgecolors=edgecolors, **kw)
         else:
-            pc = plt.scatter(dn, d, s, v, marker, edgecolors=edgecolors, **kw)
+            pc = plt.scatter(t, d, s, v, marker, edgecolors=edgecolors, **kw)
             ax = plt.gca()
         ax.invert_yaxis()
         ax.xaxis_date()
@@ -233,7 +228,6 @@ class OkeanidLog(h5py.File):
 
 
     def contourf_time_section(self, x, dt=60, dz=1, dv=None, **kw):
-        kw.update(return_epoch=False) # TODO: simplify when oalib uses matplotlib.dates
         v, t = self.timeseries(x, rmnans=True, **kw)
         z = self.interpolate_timeseries('depth', t)
         z, v, t = oalib.rmnans(z, v, t)
@@ -261,17 +255,10 @@ class OkeanidLog(h5py.File):
             with a small (e.g., 1e-6) smoothing factor...                       
  
         """
-        if type(t[0]) is datetime.datetime: t = oalib.python_datetime_to_unix_epoch(t)
-        elif type(t[0]) is not float: print('time argument must be datetime or float epoch seconds') # TODO exception
-        v, t_v = self.timeseries(x, rmnans=True, return_epoch=True) # r_e faster??
+        v, t_v = self.timeseries(x, rmnans=True)
+        kw.update(dict(bounds_error=False))
         interpolant = sp.interpolate.interp1d(t_v, v, **kw)
-        try: # assume time array is Unix epoch float seconds
-            return interpolant(t)
-        except ValueError: # A value in x_new is below the interpolation range.
-            kw.update(dict(bounds_error=False))
-            interpolant = sp.interpolate.interp1d(t_v, v, **kw)
-            return interpolant(t)
-            # TODO clean up
+        return interpolant(t)
 
 
     def interpolate_trajectory(self, t, return_degrees=True, **kw):
@@ -377,8 +364,8 @@ class OkeanidLog(h5py.File):
 
     def comparison_timeseries(self, x, y, *a, **kw):
         #TODO add optional transformations for data in each channel
-        x, tx = self.timeseries(x, return_epoch=True)
-        y, ty = self.timeseries(y, return_epoch=True)
+        x, tx = self.timeseries(x)
+        y, ty = self.timeseries(y)
         t = np.hstack((tx,ty))
         t.sort() # in-place sort
         ix = np.interp(t,tx,x)
@@ -388,7 +375,6 @@ class OkeanidLog(h5py.File):
  
     def plot_difference_timeseries(self, x, y, *a, **kw):
         t, ix, iy = self.comparison_timeseries(x, y)
-        t = np.array([datetime.datetime.utcfromtimestamp(e) for e in t])
         if 'axes' in kw: # deal with possible bug in plot_date?
             ax = kw.pop('axes')
             ax.plot_date(t, ix - iy, *a, **kw)

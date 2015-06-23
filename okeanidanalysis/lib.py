@@ -6,47 +6,13 @@ Generally useful methods that span across submodules.
 
 """
 
-import time, datetime, pytz
 import numpy as np
 import scipy as sp
 import scipy.interpolate
 import matplotlib as mpl
 import matplotlib.patches
 
-UNIX_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)                         
-
 golden_ratio = 1.61803398875
-
-def utime(t, convention=None):
-    """Convert time to mircoseconds since epoch.
-
-    Expects time given as a datetime object.
-
-    """
-#    typet = type(t)
-#    if typet is datetime.datetime: # t = t.timetuple()
-#        return int(time.mktime(t.timetuple())*1e6 + t.microsecond)
-#    else:
-#        raise TypeError('time type {} not recognized'.format(typet))
-#TODO something to handle matlab datenum convention easily
-    return [ue * 1e6 for ue in python_datetime_to_unix_epoch(t)]
-
-
-def python_datetime_to_unix_epoch(dto):
-    if type(dto) not in (list, np.ndarray): dto = [dto] # TODO is there a more elegant way?
-    try:                                                                        
-        return [(dt - UNIX_EPOCH).total_seconds() for dt in dto]
-    except TypeError: # can't subtract offset-naive and offset-aware datetimes
-        dto = (pytz.UTC.localize(dt) for dt in dto)
-        return [(dt - UNIX_EPOCH).total_seconds() for dt in dto]  
-
-
-def matlab_datenum_to_python_datetime(dn):                                      
-    day = (datetime.datetime.fromordinal(int(n)) for n in dn)
-    frac = (datetime.timedelta(days=n%1) for n in dn)
-    shift = datetime.timedelta(days = 366)                                       
-    return [d.replace(tzinfo=pytz.UTC) + f - shift for d, f in zip(day, frac)]
-# TODO: consider explicitly returning an array if the input was an array 
 
 
 def injectlocals(l, skip=['self','args','kwargs'], **kwargs):
