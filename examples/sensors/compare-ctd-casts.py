@@ -38,7 +38,7 @@ t = matplotlib.dates.drange(dstart,dend,ddelta)
 delta_C = 0 # We don't have an offset to directly compare the conductivity.
 delta_T = -273.15 # Kelvin to Celsius, since engineering logs currently unserialize temperature in Kelvin
 delta_P = 0 # We don't have an offset to directly compare the pressure.
-delta_S = 0 # np.mean([34.5886 - 33.1413, 34.6348 - 32.9238]) # offset from comparison in test tank (currently a manual procedure)
+delta_S = np.mean([34.5886 - 33.1413, 34.6348 - 32.9238]) # offset from comparison in test tank (currently a manual procedure)
 
 print('Salinity offset: {0} [‰]'.format(delta_S))
 
@@ -90,5 +90,13 @@ ax_conductivity.set_xlabel('conductivity [_]') # CTD interface lists units as mm
 ax_temperature.set_xlabel('temperature [degC]')
 ax_pressure.set_xlabel('pressure [db]')
 ax_salinity.set_xlabel('salinity [‰]')
+
+# automatic locator & formatter for salinity makes something you can't really read -- fix it
+ax_salinity.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
+ax_salinity.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
+
+vehicle = s.filename.split('/')[3]
+logset = s.filename.split('/')[-2]
+plt.suptitle('{0} {1}'.format(vehicle, logset))
 
 plt.show()
