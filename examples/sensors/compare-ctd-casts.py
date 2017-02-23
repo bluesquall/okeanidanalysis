@@ -12,6 +12,8 @@ sched asap "set spiral_cast.Depth07 10 meter;set spiral_cast.Depth08 0.5 meter;s
 The timespan we are interested in is roughly:
 
 [2015-06-04 16:40:00.000, 2015-06-04 18:00:00.000]
+[2015-07-07 16:10:00.000, 2015-07-07 17:00:00.000]
+
 
 '''
 
@@ -25,20 +27,22 @@ import matplotlib
 import matplotlib.dates
 import matplotlib.pyplot as plt
 
+import gsw
+
 import okeanidanalysis as oa
 
 
-dstart = datetime.datetime(2015,6,4,16,40,0)
-dend = datetime.datetime(2015,6,4,18,0,0)
+dstart = datetime.datetime(2015,7,7,16,10,0)
+dend = datetime.datetime(2015,7,7,17,0,0)
 ddelta = datetime.timedelta(seconds=1)
 
-r = scipy.io.loadmat(os.path.expanduser('~/Downloads/pctd_4_jordan2.mat'))['B'][0][0]
-s = oa.logs.OkeanidLog('/mbari/LRAUV/tethys/missionlogs/2015/20150602_20150604/20150603T184030/201506031840_201506042357.mat')
+r = scipy.io.loadmat(os.path.expanduser('~/Downloads/pctd_4_jordan_18815.mat'))['B'][0][0]
+s = oa.logs.OkeanidLog('/mbari/LRAUV/tethys/missionlogs/2015/20150706_20150707/20150707T015732/201507070157_201507072348.mat')
 t = matplotlib.dates.drange(dstart,dend,ddelta)
-delta_C = 0 # We don't have an offset to directly compare the conductivity.
+delta_C = 0.03 # We don't have an offset to directly compare the conductivity.
 delta_T = -273.15 # Kelvin to Celsius, since engineering logs currently unserialize temperature in Kelvin
 delta_P = 0 # We don't have an offset to directly compare the pressure.
-delta_S = np.mean([34.5886 - 33.1413, 34.6348 - 32.9238]) # offset from comparison in test tank (currently a manual procedure)
+delta_S = 0 #np.mean([34.5886 - 33.1413, 34.6348 - 32.9238]) # offset from comparison in test tank (currently a manual procedure)
 
 print('Salinity offset: {0} [‰]'.format(delta_S))
 
@@ -61,6 +65,20 @@ tethys = dict( t=t,
                sea_water_pressure=s.interpolate_timeseries('sea_water_pressure',t) + delta_P,
                sea_water_salinity=s.interpolate_timeseries('sea_water_salinity',t) + delta_S,
              )
+"""
+C, tNB = s.timeseries('sea_water_electrical_conductivity')
+T, tNB = s.timeseries('sea_water_temperature')
+P, tNB = s.timeseries('sea_water_pressure')
+print(C.shape, T.shape, P.shape) # XXX Pressure can end up with different number of entries than C&T?
+cSP = gsw.SP_from_C(C + delta_C, T + delta_T, P + delta_P)
+cSPi = sp.interpolate.interp1d(tNB, cSP, bounds_error=False)
+tethys.update(dict(calculated_sea_water_salinity=cSPi(t)))
+"""
+cSP = gsw.SP_from_C(tethys['sea_water_electrical_conductivity'] * 10, # XXX factor of 10 suspected to be a units thing...
+                    tethys['sea_water_temperature'],
+                    tethys['sea_water_pressure'])
+tethys.update(dict(calculated_sea_water_salinity=cSP))
+
 # TODO: Put the above data into a nc4 group instead of dictionaries.
 # TODO: Resample the LRAUV data by depth-binning for a direct comparison to the rosette data.
 
@@ -78,6 +96,7 @@ ax_conductivity.plot(tethys['sea_water_electrical_conductivity'], tethys['depth'
 ax_temperature.plot(tethys['sea_water_temperature'], tethys['depth'], **tkw)
 ax_pressure.plot(tethys['sea_water_pressure'], tethys['depth'], **tkw)
 ax_salinity.plot(tethys['sea_water_salinity'], tethys['depth'], **tkw)
+ax_salinity.plot(tethys['calculated_sea_water_salinity'], tethys['depth'], color='m', **tkw)
 
 ax_conductivity.set_ylim([500,0])
 ax_conductivity.set_xlim([3.3,3.9])
